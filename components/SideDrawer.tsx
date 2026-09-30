@@ -42,7 +42,7 @@ export default function SideDrawer() {
 
   // Real user state from Firebase Auth
   const customerName = user 
-    ? (user.displayName || user.email?.split("@")[0] || "User") 
+    ? (user.displayName || user.phoneNumber || user.email?.split("@")[0] || "User") 
     : "Guest User";
   const customerAvatar = user?.photoURL || "";
   const [offersList, setOffersList] = useState<Offer[]>([]);

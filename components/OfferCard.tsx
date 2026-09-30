@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Star, Ticket, ExternalLink, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { Star, MapPin, Heart, ShoppingBag, CheckCircle2, ArrowUpRight } from "lucide-react";
 import { Offer } from "../lib/db";
 import { useApp } from "../lib/AppContext";
 
@@ -10,106 +10,149 @@ interface OfferCardProps {
   onViewOffer: (offer: Offer) => void;
 }
 
+const DEFAULT_OFFER_IMG = "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80";
+
 export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
-  const { likedOffers, toggleOfferLike } = useApp();
+  const { likedOffers, toggleOfferLike, addToCart } = useApp();
+  const [imgSrc, setImgSrc] = useState(offer.businessLogo || DEFAULT_OFFER_IMG);
+  
   const isLiked = Boolean(likedOffers[offer.id]);
   const isSoldOut = (offer as any).isSoldOut || (offer as any).availableCount === 0;
 
+  const originalPrice = offer.originalPrice || Math.round((offer.ouiyaPrice ?? 499) * 1.35);
+  const discountedPrice = offer.ouiyaPrice ?? 499;
+  const savings = originalPrice - discountedPrice;
+
   return (
-    <div className="group bg-surface border border-border-main rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative">
-      {/* Visual Header / Image */}
-      <div className="relative h-48 w-full bg-surface-hover overflow-hidden">
+    <div 
+      onClick={() => onViewOffer(offer)}
+      className="group bg-white dark:bg-[#131926] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative cursor-pointer"
+    >
+      {/* Product Image Container with Badges */}
+      <div className="relative h-44 sm:h-48 w-full bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
         <img
-          src={offer.businessLogo || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=60"}
-          alt={offer.businessName}
-          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
+          src={imgSrc}
+          alt={offer.title}
+          onError={() => setImgSrc(DEFAULT_OFFER_IMG)}
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
             isSoldOut ? "grayscale opacity-60" : ""
           }`}
         />
 
-        {/* Top Badges Row */}
-        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-          <span className="bg-zinc-950/75 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-1 rounded-full shadow-md">
-            {offer.category}
+        {/* Soft bottom image gradient for high-contrast presentation */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+        {/* Top-Left Discount Badge */}
+        <div className="absolute top-2.5 left-2.5 z-10">
+          <span className="bg-gradient-to-r from-[#DC0101] to-[#E11D48] text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow-sm tracking-tight inline-flex items-center gap-1">
+            <span>{offer.discount || "25% OFF"}</span>
           </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleOfferLike(offer.id);
-            }}
-            className={`p-2 rounded-full backdrop-blur-md transition-transform active:scale-90 cursor-pointer shadow-md ${
-              isLiked
-                ? "bg-red-500 text-white"
-                : "bg-black/40 text-white hover:bg-black/60"
-            }`}
-            title={isLiked ? "Remove from favourites" : "Save to favourites"}
-          >
-            <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current" : ""}`} />
-          </button>
         </div>
+
+        {/* Top-Right Wishlist Heart */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleOfferLike(offer.id);
+          }}
+          className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all active:scale-90 shadow-sm cursor-pointer ${
+            isLiked
+              ? "bg-[#DC0101] text-white"
+              : "bg-white/85 dark:bg-black/60 text-slate-700 dark:text-slate-200 hover:text-[#DC0101] hover:bg-white"
+          }`}
+          title={isLiked ? "Remove from favourites" : "Save to favourites"}
+        >
+          <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+        </button>
 
         {/* Sold out overlay tag */}
         {isSoldOut && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-10">
-            <span className="bg-red-600 text-white text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl shadow-lg border border-red-400">
+            <span className="bg-[#DC0101] text-white text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl shadow-lg border border-red-400">
               CLAIMED OUT
             </span>
           </div>
         )}
-
-        {/* Discount Overlay */}
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-4 flex flex-col justify-end">
-          <div className="flex items-baseline gap-2">
-            <span className="text-white text-xl font-black tracking-tight drop-shadow-md">
-              {offer.discount}
-            </span>
-            {offer.originalPrice && offer.ouiyaPrice && (
-              <div className="flex items-center gap-1 text-xs">
-                <span className="text-zinc-400 line-through">₹{offer.originalPrice}</span>
-                <span className="text-emerald-400 font-bold">₹{offer.ouiyaPrice}</span>
-              </div>
-            )}
-          </div>
-          <span className="text-zinc-200 text-xs font-medium line-clamp-1 drop-shadow-xs">
-            {offer.subTitle}
-          </span>
-        </div>
       </div>
 
       {/* Content Body */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-base font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-              {offer.businessName}
-            </h3>
-            {/* Rating */}
-            <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-lg text-amber-500 text-xs font-bold shrink-0">
-              <Star className="w-3.5 h-3.5 fill-current" />
-              <span>{offer.rating}</span>
+          {/* Category & Rating Row */}
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <span className="text-[10px] font-extrabold text-[#DC0101] dark:text-red-400 uppercase tracking-wider truncate">
+              {offer.category || "General"}
+            </span>
+            <div className="flex items-center gap-1 bg-emerald-600 text-white px-1.5 py-0.5 rounded-md text-[10px] font-black shrink-0 shadow-xs">
+              <Star className="w-3 h-3 fill-current" />
+              <span>{offer.rating || 4.5}</span>
             </div>
           </div>
-          <p className="text-xs text-muted line-clamp-2 leading-relaxed mb-4">
-            {offer.description}
-          </p>
+
+          {/* Store Name with Verified Icon */}
+          <div className="flex items-center gap-1">
+            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+              {offer.businessName}
+            </h4>
+            <CheckCircle2 className="w-3 h-3 text-sky-500 shrink-0" />
+          </div>
+
+          {/* Deal Title */}
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-[#DC0101] transition-colors leading-snug mt-0.5">
+            {offer.title}
+          </h3>
+
+          {/* Location / Distance Indicator */}
+          <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-medium">
+            <MapPin className="w-3 h-3 text-[#DC0101] shrink-0" />
+            <span className="truncate">{offer.location || "Pondicherry"}</span>
+          </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="pt-3 border-t border-border-subtle flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-muted">
-            <Ticket className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-bold tracking-widest uppercase">
-              {offer.isCoupon ? "Coupon" : "Deal"}
-            </span>
+        {/* Pricing Row & Action Buttons */}
+        <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                ₹{discountedPrice}
+              </span>
+              {originalPrice > discountedPrice && (
+                <span className="text-xs text-slate-400 line-through font-medium">
+                  ₹{originalPrice}
+                </span>
+              )}
+            </div>
+            {savings > 0 && (
+              <span className="text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 block">
+                Save ₹{savings}
+              </span>
+            )}
           </div>
-          <button
-            onClick={() => onViewOffer(offer)}
-            disabled={isSoldOut}
-            className="flex items-center gap-1.5 text-xs font-bold text-primary group-hover:text-primary-hover hover:underline transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span>{isSoldOut ? "Claimed" : "View Deal"}</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(offer);
+              }}
+              disabled={isSoldOut}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#DC0101] hover:text-white text-slate-700 dark:text-slate-200 transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+              title="Add to Cart"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewOffer(offer);
+              }}
+              disabled={isSoldOut}
+              className="bg-[#DC0101] hover:bg-[#B91C1C] text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-1"
+            >
+              <span>{isSoldOut ? "Claimed" : "View"}</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

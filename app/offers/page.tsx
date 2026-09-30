@@ -2,41 +2,145 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useApp } from "../../lib/AppContext";
-import { getOffers, getBusinessesFromFirebase, getCategoriesFromFirebase, Offer, Business, Category, matchesSubCategory } from "../../lib/db";
+import { 
+  getOffers, 
+  getBusinessesFromFirebase, 
+  getCategoriesFromFirebase, 
+  OFFICIAL_CATEGORIES, 
+  Offer, 
+  Business, 
+  Category, 
+  matchesSubCategory 
+} from "../../lib/db";
 import CategoryBannerCarousel from "../../components/CategoryBannerCarousel";
+import OfferCard from "../../components/OfferCard";
 import { 
   ArrowLeft, Search, Star, Heart, MapPin, 
   Sparkles, Flame, Percent, ChevronRight, Filter, Tag, ArrowUpRight
 } from "lucide-react";
 
-// Sub-categories mapping for Wireframe Image 2 compliance
-const SUB_CATEGORIES: Record<string, string[]> = {
-  "Accommodation": ["All", "Hotels", "Resorts", "Homestays", "Lodges", "Guest Houses", "Villas"],
-  "accommodation": ["All", "Hotels", "Resorts", "Homestays", "Lodges", "Guest Houses", "Villas"],
-  "Electronics": ["All", "Mobiles", "Audio", "TV & Video", "Accessories"],
-  "Mobiles": ["All", "Smartphones", "Feature Phones", "Accessories", "Tablets"],
-  "Audio": ["All", "Headphones", "Earbuds", "Speakers", "Soundbars"],
-  "TV & Video": ["All", "Smart TVs", "4K TVs", "Projectors", "Set Top Box"],
-  "Laptops": ["All", "Gaming", "Business", "Ultrabook", "2-in-1"],
-  "Accessories": ["All", "Chargers", "Cables", "Power Banks", "Bags"],
-  "Food & Dining": ["All", "Cafes", "Fine Dining", "Bakeries", "Fast Food"],
-  "Fashion": ["All", "Men", "Women", "Footwear", "Watches"],
-  "Beauty": ["All", "Skincare", "Haircare", "Makeup", "Spa"],
-  "Home & Living": ["All", "Furniture", "Decor", "Lighting", "Kitchen"],
-  "Travel": ["All", "Hotels", "Resorts", "Tours", "Rentals"],
-  "Sports": ["All", "Fitness", "Gyms", "Equipment", "Apparel"]
+// Helper to resolve real PNG category icons matching the Mobile App
+const resolveCategoryIcon = (categoryName: string) => {
+  const lower = (categoryName || "").toLowerCase().trim();
+  if (lower.includes("accommodat") || lower.includes("hotel") || lower.includes("resort") || lower.includes("villa") || lower.includes("stay")) {
+    return "/assets/category_icons/cat_accommodation.png";
+  }
+  if (lower.includes("food") || lower.includes("dine") || lower.includes("dining") || lower.includes("restaurant") || lower.includes("cafe")) {
+    return "/assets/category_icons/cat_food.png";
+  }
+  if (lower.includes("beauty") || lower.includes("parlour") || lower.includes("saloon") || lower.includes("salon") || lower.includes("hair")) {
+    return "/assets/category_icons/cat_beauty_parlour_saloon.png";
+  }
+  if (lower.includes("boat") || lower.includes("water") || lower.includes("cruise") || lower.includes("kayak")) {
+    return "/assets/category_icons/cat_boating_service.png";
+  }
+  if (lower.includes("car") || lower.includes("wash") || lower.includes("detail")) {
+    return "/assets/category_icons/cat_car_wash.png";
+  }
+  if (lower.includes("two wheeler") || lower.includes("bike") || lower.includes("scooter") || lower.includes("rental")) {
+    return "/assets/category_icons/cat_two_wheeler_rental.png";
+  }
+  if (lower.includes("spa") || lower.includes("massage") || lower.includes("wellness")) {
+    return "/assets/category_icons/cat_spa_massage_center.png";
+  }
+  if (lower.includes("night") || lower.includes("pub") || lower.includes("bar") || lower.includes("club")) {
+    return "/assets/category_icons/cat_night_life.png";
+  }
+  if (lower.includes("real estate") || lower.includes("property") || lower.includes("estate")) {
+    return "/assets/category_icons/cat_real_estate.png";
+  }
+  if (lower.includes("entertainment") || lower.includes("game") || lower.includes("movie") || lower.includes("play")) {
+    return "/assets/category_icons/cat_entertainment.png";
+  }
+  if (lower.includes("mobile") || lower.includes("phone") || lower.includes("repair") || lower.includes("electronics") || lower.includes("tech")) {
+    return "/assets/category_icons/cat_mobile_repair.png";
+  }
+  return null;
 };
 
-// Category Banners mapping for Wireframe Image 2 compliance
+// Sub-categories mapping matching the 11 Mobile App Categories (kDefaultMockCategories)
+const SUB_CATEGORIES: Record<string, string[]> = {
+  "Accommodation": ["All", "Hotels", "Resorts", "Homestays", "Lodges", "Guest Houses", "Villas"],
+  "Food": ["All", "Restaurant", "Cafe", "Fast Food", "Sweets & Desserts", "Ice Cream", "Snacks", "Biryani", "Vegetarian", "Non-Vegetarian", "Street food"],
+  "Two Wheeler Rental": ["All", "Scooters", "Bikes", "Electric Scooters", "Premium Bikes", "Gear Bikes"],
+  "Car Wash": ["All", "Car Wash", "Bike Wash", "Interior Cleaning", "Exterior Cleaning", "Detailing", "Polishing"],
+  "Mobile Repair": ["All", "Mobile Repair", "Screen Replacement", "Battery Replacement", "Software Service", "Accessories", "Unlocking"],
+  "Real Estate": ["All", "Buy Property", "Rent Property", "Sell Property", "Residential", "Commercial", "Plots", "Apartments", "Villas"],
+  "Beauty Parlour & Saloon": ["All", "Haircut", "Hair Styling", "Hair Colour", "Facial", "Makeup", "Bridal Makeup", "Manicure & Pedicure", "Waxing", "Threading"],
+  "Spa Massage Center": ["All", "Full Body Massage", "Head Massage", "Foot Massage", "Couple Massage", "Ayurvedic Massage", "Spa Treatments", "Body Scrub"],
+  "Night Life": ["All", "Pubs", "Bars", "Restro Bars", "Lounges", "Clubs", "Live Music", "DJ", "Karaoke"],
+  "Entertainment": ["All", "Theme Park", "Theatre", "Gaming", "Bowling", "Arcade", "Kids Play", "Events", "Amusement", "Sports & Activities"],
+  "Boating Service": ["All", "Boat Ride", "Speed Boat", "Pedal Boat", "Kayaking", "Canoeing", "Fishing Boat", "Cruise", "Sunset Boat Ride"]
+};
+
+// Category Banners mapping for the 11 Official Mobile App Categories
 const CATEGORY_BANNERS: Record<string, { title: string; subtitle: string; discount: string; bg: string }> = {
-  "Electronics": { title: "Big Electronics Fest!", subtitle: "Latest gadgets. Best offers.", discount: "Up to 60% OFF", bg: "from-blue-700 via-indigo-800 to-purple-900" },
-  "Mobiles": { title: "Smartphones Mega Deal", subtitle: "Top smartphones at unbeatable prices", discount: "Up to 50% OFF", bg: "from-slate-900 via-zinc-800 to-blue-900" },
-  "Audio": { title: "Sound Like Never Before", subtitle: "Premium headphones & wireless earbuds", discount: "Up to 50% OFF", bg: "from-red-800 via-rose-900 to-zinc-950" },
-  "TV & Video": { title: "Big Screen Big Experience", subtitle: "4K Smart TVs & Home Theater setups", discount: "Up to 55% OFF", bg: "from-cyan-900 via-blue-950 to-zinc-950" },
-  "Laptops": { title: "Powerful Performance", subtitle: "Gaming, business & ultrabook laptops", discount: "Up to 40% OFF", bg: "from-purple-900 via-indigo-950 to-zinc-950" },
-  "Accessories": { title: "Essential Tech Accessories", subtitle: "Fast chargers, durable cables & power banks", discount: "Up to 50% OFF", bg: "from-blue-900 via-cyan-950 to-zinc-950" },
-  "Food & Dining": { title: "Pondicherry Foodie Special", subtitle: "Delightful French & South Indian delicacies", discount: "Flat 30% OFF", bg: "from-orange-700 via-red-800 to-amber-900" },
-  "Fashion": { title: "Trendy Style Clearance", subtitle: "Apparel, footwear & luxury accessories", discount: "Up to 60% OFF", bg: "from-pink-700 via-rose-800 to-purple-900" }
+  "Accommodation": { 
+    title: "Luxury Stays & Heritage Resorts", 
+    subtitle: "Beachfront villas, French quarter boutiques & seaside hotels", 
+    discount: "Up to 45% OFF", 
+    bg: "from-sky-800 via-blue-900 to-indigo-950" 
+  },
+  "Food": { 
+    title: "Pondicherry Foodie Special", 
+    subtitle: "French cafes, authentic wood-fired pizzas & fresh seafood", 
+    discount: "Flat 30% OFF", 
+    bg: "from-orange-700 via-red-800 to-amber-900" 
+  },
+  "Two Wheeler Rental": { 
+    title: "Explore Pondy on Wheels", 
+    subtitle: "Scooters, Royal Enfields & electric bikes at daily discounts", 
+    discount: "From ₹299/day", 
+    bg: "from-amber-700 via-orange-800 to-zinc-950" 
+  },
+  "Car Wash": { 
+    title: "Premium Vehicle Care", 
+    subtitle: "Foam wash, deep interior detailing & ceramic coating deals", 
+    discount: "Up to 40% OFF", 
+    bg: "from-cyan-800 via-blue-900 to-zinc-950" 
+  },
+  "Mobile Repair": { 
+    title: "Expert Tech & Phone Fixes", 
+    subtitle: "Same-day screen replacements, battery repairs & accessories", 
+    discount: "Up to 50% OFF", 
+    bg: "from-violet-800 via-purple-900 to-zinc-950" 
+  },
+  "Real Estate": { 
+    title: "Prime Properties & Beachfront Lands", 
+    subtitle: "Top residential plots, commercial spaces & heritage villas", 
+    discount: "Verified Listings", 
+    bg: "from-emerald-800 via-teal-900 to-zinc-950" 
+  },
+  "Beauty Parlour & Saloon": { 
+    title: "Glow Up & Styling", 
+    subtitle: "Bridal makeup, hair styling, facials & grooming packages", 
+    discount: "Up to 50% OFF", 
+    bg: "from-pink-700 via-rose-800 to-purple-900" 
+  },
+  "Spa Massage Center": { 
+    title: "Ultimate Relaxation & Wellness", 
+    subtitle: "Ayurvedic therapy, Swedish massage & luxury couple spas", 
+    discount: "Up to 55% OFF", 
+    bg: "from-rose-800 via-red-900 to-zinc-950" 
+  },
+  "Night Life": { 
+    title: "Vibrant Pondicherry Evenings", 
+    subtitle: "Restro-bars, craft beer lounges & weekend beach parties", 
+    discount: "Happy Hours Deals", 
+    bg: "from-purple-900 via-indigo-950 to-zinc-950" 
+  },
+  "Entertainment": { 
+    title: "Fun, Gaming & Activities", 
+    subtitle: "Bowling alleys, VR gaming zones, theme parks & cinema", 
+    discount: "Up to 35% OFF", 
+    bg: "from-fuchsia-800 via-pink-900 to-zinc-950" 
+  },
+  "Boating Service": { 
+    title: "Chunnambar & Mangrove Cruises", 
+    subtitle: "Speed boats, sunset rides & serene backwater kayaking", 
+    discount: "Flat 25% OFF", 
+    bg: "from-teal-700 via-cyan-800 to-blue-950" 
+  }
 };
 
 export default function CategoryBrowseView() {
@@ -46,20 +150,19 @@ export default function CategoryBrowseView() {
     setTab, 
     searchQuery, 
     setSearchQuery,
-    openShopDetails,
-    likedOffers,
-    toggleOfferLike,
-    likedShops,
-    toggleShopLike
+    openOfferDetails
   } = useApp();
 
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
+  const [categoriesList, setCategoriesList] = useState<Category[]>(OFFICIAL_CATEGORIES);
   const [activeSubCategory, setActiveSubCategory] = useState<string>("All");
 
   useEffect(() => {
-    getCategoriesFromFirebase().then(setCategoriesList);
+    getCategoriesFromFirebase().then((cats) => {
+      if (cats && cats.length > 0) {
+        setCategoriesList(cats);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -73,16 +176,6 @@ export default function CategoryBrowseView() {
         query: searchQuery
       });
       setOffers(activeOffers);
-
-      const allBiz = await getBusinessesFromFirebase();
-      if (selectedCategory && selectedCategory !== "All") {
-        const filteredBiz = allBiz.filter((b) => 
-          activeOffers.some((o) => o.shopId === b.id || o.businessName.toLowerCase() === b.name.toLowerCase())
-        );
-        setBusinesses(filteredBiz.length > 0 ? filteredBiz : allBiz);
-      } else {
-        setBusinesses(allBiz);
-      }
     };
     fetchData();
   }, [selectedCategory, searchQuery]);
@@ -110,15 +203,6 @@ export default function CategoryBrowseView() {
     return SUB_CATEGORIES[selectedCategory] || ["All", "Top Rated", "New Arrivals", "Best Discount"];
   }, [selectedCategory, categoriesList]);
 
-  const categoryBanner = useMemo(() => {
-    return CATEGORY_BANNERS[selectedCategory] || {
-      title: `${selectedCategory === "All" ? "OUIYA Mega Deals" : selectedCategory}`,
-      subtitle: "Discover best local offers & discount vouchers in Pondicherry",
-      discount: "Up to 50% OFF",
-      bg: "from-red-600 via-rose-700 to-primary-dark"
-    };
-  }, [selectedCategory]);
-
   // Filtered offers by sub-category tab
   const filteredOffers = useMemo(() => {
     if (activeSubCategory === "All") return offers;
@@ -129,69 +213,92 @@ export default function CategoryBrowseView() {
     <div className="w-full pb-24 animate-fade-in select-none bg-zinc-50 dark:bg-[#0b0f19]">
       
       {/* 1. Header Navigation */}
-      <div className="sticky top-16 z-30 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-4 sm:px-8 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleBack} 
-            className="hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2 rounded-full transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4.5 h-4.5 text-zinc-700 dark:text-zinc-300" />
-          </button>
-          <div>
-            <h2 className="text-base font-black tracking-wider uppercase text-zinc-900 dark:text-white leading-tight">
-              {searchQuery ? `Search: "${searchQuery}"` : (selectedCategory === "All" ? "All Categories" : selectedCategory)}
-            </h2>
-            <span className="text-[10px] text-zinc-500 font-semibold">
-              {filteredOffers.length} Deals Available in Pondicherry
-            </span>
+      <div className="sticky top-16 z-30 bg-white dark:bg-[#121620] border-b border-zinc-200/80 dark:border-zinc-800 px-3 sm:px-8 py-3.5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <button 
+              onClick={handleBack} 
+              className="hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-750 p-2 rounded-xl transition-colors cursor-pointer"
+              title="Back to Home"
+            >
+              <ArrowLeft className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+            </button>
+            <div>
+              <h2 className="text-sm sm:text-base font-black tracking-tight text-zinc-900 dark:text-white leading-tight">
+                {searchQuery ? `Search: "${searchQuery}"` : (selectedCategory === "All" ? "All Categories" : selectedCategory)}
+              </h2>
+              <span className="text-[10.5px] text-zinc-500 font-semibold">
+                {filteredOffers.length} Verified Deals in Pondicherry
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Main Category Quick Selector Bar */}
-        <div className="hidden md:flex items-center gap-2 overflow-x-auto no-scrollbar">
           <button
-            onClick={() => setSelectedCategory("All")}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              selectedCategory === "All" 
-                ? "bg-red-600 text-white shadow-md" 
-                : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200"
+            onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
+            className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
+              selectedCategory === "All"
+                ? "bg-[#DC0101] text-white shadow-sm"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
-            All
+            Reset All
           </button>
-          {categoriesList.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.name)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                selectedCategory === cat.name 
-                  ? "bg-red-600 text-white shadow-md" 
-                  : "bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+        </div>
+
+        {/* 11 Official Category Quick Selector Chips (Horizontal Scroll) */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <button
+            onClick={() => setSelectedCategory("All")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              selectedCategory === "All" 
+                ? "bg-[#DC0101] text-white shadow-sm scale-102" 
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>All Deals</span>
+          </button>
+          {categoriesList.map((cat) => {
+            const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
+            const iconPath = resolveCategoryIcon(cat.name);
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 ${
+                  isSelected 
+                    ? "bg-[#DC0101] text-white shadow-sm scale-102" 
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {iconPath && (
+                  <img src={iconPath} alt="" className="w-3.5 h-3.5 object-contain" />
+                )}
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 mt-5 space-y-6">
 
         {/* 2. Sub-Category Scrollable Pills Row */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[10px] font-black uppercase text-zinc-400 shrink-0 px-2 flex items-center gap-1">
-            <Filter className="w-3 h-3 text-red-500" />
-            <span>Sub-Category:</span>
+        <div className="bg-white dark:bg-[#121620] border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-3 shadow-xs flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span className="text-[10px] font-black uppercase text-zinc-400 shrink-0 px-1 flex items-center gap-1">
+            <Filter className="w-3 h-3 text-[#DC0101]" />
+            <span>Filter:</span>
           </span>
           {subCategoriesList.map((subCat) => (
             <button
               key={subCat}
               onClick={() => setActiveSubCategory(subCat)}
-              className={`px-4 py-2 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer whitespace-nowrap ${
                 activeSubCategory === subCat
-                  ? "bg-red-600 text-white shadow-md scale-102"
-                  : "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                  ? "bg-[#DC0101] text-white shadow-xs scale-102"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               {subCat}
@@ -205,105 +312,47 @@ export default function CategoryBrowseView() {
           categoryName={selectedCategory}
         />
 
-        {/* 4. Filtered Deal Offers (Wireframe Image 2 Grid & Cards) */}
-        <section className="space-y-4 pt-2">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900 dark:text-white flex items-center gap-1.5">
-              <Tag className="w-4 h-4 text-red-600" />
-              <span>{selectedCategory} Deals & Offers</span>
+        {/* 4. Filtered Deal Offers Grid */}
+        <section className="space-y-4 pt-1">
+          <div className="flex justify-between items-center border-b border-zinc-200/80 dark:border-zinc-800/80 pb-2.5">
+            <h3 className="text-base font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
+              <Tag className="w-4 h-4 text-[#DC0101]" />
+              <span>{selectedCategory === "All" ? "All Verified Deals" : `${selectedCategory} Deals`}</span>
             </h3>
             <span className="text-xs font-bold text-zinc-500">
-              {filteredOffers.length} Deals
+              {filteredOffers.length} Deals Found
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {filteredOffers.map((offer) => {
-              const isLiked = likedOffers[offer.id];
-              return (
-                <div
+          {filteredOffers.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
+              {filteredOffers.map((offer) => (
+                <OfferCard
                   key={offer.id}
-                  onClick={() => openShopDetails(offer.shopId, offer)}
-                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
-                >
-                  {/* Discount Badge */}
-                  <div className="absolute top-6 left-6 z-10 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full shadow-md">
-                    {offer.discount}
-                  </div>
-
-                  {/* Like Button */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleOfferLike(offer.id); }}
-                    className="absolute top-6 right-6 z-10 bg-white/90 dark:bg-zinc-900/90 p-2 rounded-full text-zinc-400 hover:text-red-500 backdrop-blur-md transition-colors shadow-sm cursor-pointer"
-                  >
-                    <Heart className={`w-4 h-4 ${isLiked ? "fill-red-600 text-red-600" : ""}`} />
-                  </button>
-
-                  {/* Product Image */}
-                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850">
-                    <img
-                      src={offer.businessLogo || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80"}
-                      alt={offer.businessName}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-
-                  {/* Product Details */}
-                  <div className="space-y-2 flex-grow">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-[10px] font-extrabold uppercase text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md">
-                        {offer.category || "Offer"}
-                      </span>
-                      <div className="flex items-center gap-1 text-amber-500 text-[10px] font-black shrink-0">
-                        <Star className="w-3.5 h-3.5 fill-current" />
-                        <span>{offer.rating || 4.5}</span>
-                      </div>
-                    </div>
-
-                    <h4 className="text-sm font-black text-zinc-900 dark:text-white truncate group-hover:text-red-600 transition-colors leading-tight">
-                      {offer.businessName}
-                    </h4>
-
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 font-medium leading-snug">
-                      {offer.title}
-                    </p>
-
-                    <p className="text-[11px] text-zinc-400 font-semibold flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-                      <span className="truncate">{offer.location || "White Town, Pondicherry"} • 1.2 km</span>
-                    </p>
-                  </div>
-
-                  {/* Pricing Footer */}
-                  <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                    <div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-base font-black text-zinc-900 dark:text-white">
-                          ₹{offer.ouiyaPrice}
-                        </span>
-                        {offer.originalPrice && (
-                          <span className="text-xs text-zinc-400 line-through">
-                            ₹{offer.originalPrice}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[9px] text-emerald-600 font-bold block">
-                        Save ₹{(offer.originalPrice || Math.round((offer.ouiyaPrice ?? 499) * 1.3)) - (offer.ouiyaPrice ?? 499)}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={(e) => { e.stopPropagation(); openShopDetails(offer.shopId, offer); }}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1"
-                    >
-                      <span>Claim</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  offer={offer}
+                  onViewOffer={(o) => openOfferDetails(o)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-[#121620] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-12 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 text-[#DC0101] flex items-center justify-center mx-auto">
+                <Tag className="w-6 h-6" />
+              </div>
+              <h4 className="text-base font-black text-zinc-900 dark:text-white">
+                No offers found in this subcategory
+              </h4>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                Try selecting "All" or browse other categories to discover verified discounts in Pondicherry.
+              </p>
+              <button
+                onClick={() => setActiveSubCategory("All")}
+                className="bg-[#DC0101] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-[#B91C1C] transition-all cursor-pointer"
+              >
+                Show All {selectedCategory} Deals
+              </button>
+            </div>
+          )}
         </section>
 
       </div>

@@ -2,56 +2,123 @@
 
 import React from "react";
 import { useApp } from "../lib/AppContext";
-import { Home, Grid, Compass, ShoppingCart } from "lucide-react";
+import { Home, LayoutGrid, ShoppingBag, User } from "lucide-react";
 
 export default function BottomNav() {
-  const { activeTab, setTab, cart } = useApp();
+  const { 
+    activeTab, 
+    setTab, 
+    cart, 
+    user, 
+    openAuthModal, 
+    toggleDrawer 
+  } = useApp();
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const tabs: { id: "home" | "categories" | "discover" | "cart"; label: string; icon: any; badge?: number }[] = [
-    { id: "home", label: "HOME", icon: Home },
-    { id: "categories", label: "OFFERS", icon: Grid },
-    { id: "discover", label: "DISCOVER", icon: Compass },
-    { id: "cart", label: "CART", icon: ShoppingCart, badge: totalItems }
-  ];
+  const handleProfileClick = () => {
+    if (!user) {
+      openAuthModal();
+    } else {
+      toggleDrawer();
+    }
+  };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 p-3 md:p-6 flex justify-center pointer-events-none select-none md:hidden">
-      <div className="w-full max-w-md bg-gradient-to-r from-red-600 via-red-500 to-red-600 shadow-2xl rounded-2xl py-2.5 px-4 flex justify-around items-center border border-white/20 pointer-events-auto backdrop-blur-md animate-slide-up">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const Icon = tab.icon;
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#121620] border-t border-zinc-200/80 dark:border-zinc-800 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden select-none">
+      <div className="max-w-lg mx-auto h-16 flex items-center justify-between px-2 sm:px-3">
+        {/* 1. HOME */}
+        <button
+          onClick={() => setTab("home")}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all ${
+            activeTab === "home" 
+              ? "text-[#DC0101] dark:text-[#FA0303]" 
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
+          }`}
+        >
+          <div className="relative">
+            <Home className={`w-5 h-5 ${activeTab === "home" ? "stroke-[2.5]" : "stroke-[1.8]"}`} />
+          </div>
+          <span className={`text-[9.5px] mt-1 tracking-tight ${activeTab === "home" ? "font-extrabold" : "font-bold"}`}>
+            HOME
+          </span>
+        </button>
 
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setTab(tab.id as any)}
-              className={`relative flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all duration-300 ${
-                isActive 
-                  ? "text-white scale-105 font-black" 
-                  : "text-red-100 hover:text-white opacity-70 hover:opacity-100"
-              }`}
-            >
-              <div className="relative">
-                <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
-                {tab.badge && tab.badge > 0 ? (
-                  <span className="absolute -top-1.5 -right-2 bg-white text-red-600 font-extrabold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                    {tab.badge}
-                  </span>
-                ) : null}
-              </div>
-              <span className="text-[9px] tracking-wider uppercase font-extrabold">
-                {tab.label}
+        {/* 2. CATEGORIES */}
+        <button
+          onClick={() => setTab("categories")}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all ${
+            activeTab === "categories" 
+              ? "text-[#DC0101] dark:text-[#FA0303]" 
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
+          }`}
+        >
+          <div className="relative">
+            <LayoutGrid className={`w-5 h-5 ${activeTab === "categories" ? "stroke-[2.5]" : "stroke-[1.8]"}`} />
+          </div>
+          <span className={`text-[9.5px] mt-1 tracking-tight ${activeTab === "categories" ? "font-extrabold" : "font-bold"}`}>
+            CATEGORIES
+          </span>
+        </button>
+
+        {/* 3. CART (With Badge) */}
+        <button
+          onClick={() => setTab("cart")}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all ${
+            activeTab === "cart" 
+              ? "text-[#DC0101] dark:text-[#FA0303]" 
+              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
+          }`}
+        >
+          <div className="relative">
+            <ShoppingBag className={`w-5 h-5 ${activeTab === "cart" ? "stroke-[2.5]" : "stroke-[1.8]"}`} />
+            {totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-[#DC0101] text-white text-[9px] font-black min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 border border-white dark:border-zinc-900 shadow-sm animate-pulse">
+                {totalItems}
               </span>
-              
-              {/* Underline Indicator */}
-              {isActive && (
-                <span className="absolute -bottom-1 w-4 h-0.75 bg-white rounded-full animate-scale-up" />
-              )}
-            </button>
-          );
-        })}
+            )}
+          </div>
+          <span className={`text-[9.5px] mt-1 tracking-tight ${activeTab === "cart" ? "font-extrabold" : "font-bold"}`}>
+            CART
+          </span>
+        </button>
+
+        {/* 4. PROFILE */}
+        <button
+          onClick={handleProfileClick}
+          className="flex-1 flex flex-col items-center justify-center py-1 transition-all text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
+        >
+          <div className="relative">
+            {user?.photoURL ? (
+              <img 
+                src={user.photoURL} 
+                alt="Profile" 
+                className="w-5 h-5 rounded-full object-cover border border-[#DC0101]" 
+              />
+            ) : (
+              <User className="w-5 h-5 stroke-[1.8]" />
+            )}
+          </div>
+          <span className="text-[9.5px] mt-1 tracking-tight font-bold">
+            PROFILE
+          </span>
+        </button>
+
+        {/* 5. DISCOVER PONDICHERRY (Special Pill Button matching Mobile App) */}
+        <div className="shrink-0 pl-1 pr-1">
+          <button
+            onClick={() => setTab("discover")}
+            className={`w-[96px] h-12 rounded-xl flex items-center justify-center text-center shadow-md transition-all active:scale-95 cursor-pointer ${
+              activeTab === "discover"
+                ? "ring-2 ring-zinc-900 dark:ring-white scale-102"
+                : ""
+            } bg-gradient-to-b from-[#DC0101] to-[#B91C1C] text-white shadow-red-500/25`}
+          >
+            <span className="text-[10px] font-black leading-tight tracking-tight uppercase">
+              Discover<br />Pondicherry
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

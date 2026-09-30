@@ -77,22 +77,128 @@ export interface Business {
   }[];
 }
 
-// Categories from Image 1: circular icons, with a Show all/Show less toggle.
-export const MOCK_CATEGORIES: Category[] = [
-  { id: "cat-1", name: "Electronics", iconName: "Smartphone", offersCount: 15 },
-  { id: "cat-2", name: "Food", iconName: "Utensils", offersCount: 42 },
-  { id: "cat-3", name: "Transport", iconName: "Car", offersCount: 8 },
-  { id: "cat-4", name: "Hotels", iconName: "Plane", offersCount: 12 },
-  { id: "cat-5", name: "Entertainment", iconName: "Sparkles", offersCount: 31 },
-  // Show Less/More divider
-  { id: "cat-6", name: "Saloon", iconName: "MoreHorizontal", offersCount: 19 },
-  { id: "cat-7", name: "Games", iconName: "MoreHorizontal", offersCount: 11 },
-  { id: "cat-8", name: "Health", iconName: "MoreHorizontal", offersCount: 22 },
-  { id: "cat-9", name: "Spa Deals", iconName: "MoreHorizontal", offersCount: 17 },
-  { id: "cat-10", name: "Party", iconName: "MoreHorizontal", offersCount: 25 },
+// 11 Official Categories matching the Mobile App sequence (kDefaultMockCategories)
+export const OFFICIAL_CATEGORIES: Category[] = [
+  {
+    id: "accommodation",
+    name: "Accommodation",
+    iconName: "/assets/category_icons/cat_accommodation.png",
+    offersCount: 0,
+    subcategories: ["Hotels", "Resorts", "Homestays", "Lodges", "Guest Houses", "Villas"]
+  },
+  {
+    id: "food",
+    name: "Food",
+    iconName: "/assets/category_icons/cat_food.png",
+    offersCount: 0,
+    subcategories: ["Restaurant", "Cafe", "Fast Food", "Sweets & Desserts", "Ice Cream", "Snacks", "Biryani", "Vegetarian", "Non-Vegetarian", "Street food"]
+  },
+  {
+    id: "two_wheeler_rental",
+    name: "Two Wheeler Rental",
+    iconName: "/assets/category_icons/cat_two_wheeler_rental.png",
+    offersCount: 0,
+    subcategories: ["Scooters", "Bikes", "Electric Scooters", "Premium Bikes", "Gear Bikes"]
+  },
+  {
+    id: "car_wash",
+    name: "Car Wash",
+    iconName: "/assets/category_icons/cat_car_wash.png",
+    offersCount: 0,
+    subcategories: ["Car Wash", "Bike Wash", "Interior Cleaning", "Exterior Cleaning", "Detailing", "Polishing"]
+  },
+  {
+    id: "mobile_repair",
+    name: "Mobile Repair",
+    iconName: "/assets/category_icons/cat_mobile_repair.png",
+    offersCount: 0,
+    subcategories: ["Mobile Repair", "Screen Replacement", "Battery Replacement", "Software Service", "Accessories", "Unlocking"]
+  },
+  {
+    id: "real_estate",
+    name: "Real Estate",
+    iconName: "/assets/category_icons/cat_real_estate.png",
+    offersCount: 0,
+    subcategories: ["Buy Property", "Rent Property", "Sell Property", "Residential", "Commercial", "Plots", "Apartments", "Villas"]
+  },
+  {
+    id: "beauty_parlour_saloon",
+    name: "Beauty Parlour & Saloon",
+    iconName: "/assets/category_icons/cat_beauty_parlour_saloon.png",
+    offersCount: 0,
+    subcategories: ["Haircut", "Hair Styling", "Hair Colour", "Facial", "Makeup", "Bridal Makeup", "Manicure & Pedicure", "Waxing", "Threading"]
+  },
+  {
+    id: "spa_massage_center",
+    name: "Spa Massage Center",
+    iconName: "/assets/category_icons/cat_spa_massage_center.png",
+    offersCount: 0,
+    subcategories: ["Full Body Massage", "Head Massage", "Foot Massage", "Couple Massage", "Ayurvedic Massage", "Spa Treatments", "Body Scrub"]
+  },
+  {
+    id: "night_life",
+    name: "Night Life",
+    iconName: "/assets/category_icons/cat_night_life.png",
+    offersCount: 0,
+    subcategories: ["Pubs", "Bars", "Restro Bars", "Lounges", "Clubs", "Live Music", "DJ", "Karaoke"]
+  },
+  {
+    id: "entertainment",
+    name: "Entertainment",
+    iconName: "/assets/category_icons/cat_entertainment.png",
+    offersCount: 0,
+    subcategories: ["Theme Park", "Theatre", "Gaming", "Bowling", "Arcade", "Kids Play", "Events", "Amusement", "Sports & Activities"]
+  },
+  {
+    id: "boating_service",
+    name: "Boating Service",
+    iconName: "/assets/category_icons/cat_boating_service.png",
+    offersCount: 0,
+    subcategories: ["Boat Ride", "Speed Boat", "Pedal Boat", "Kayaking", "Canoeing", "Fishing Boat", "Cruise", "Sunset Boat Ride"]
+  }
 ];
 
+export const MOCK_CATEGORIES: Category[] = OFFICIAL_CATEGORIES;
+
 export const MOCK_BUSINESSES: Business[] = [
+  {
+    id: "biz-bloomglow",
+    name: "Bloom & Glow Unisex Salon",
+    logoUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&auto=format&fit=crop&q=80",
+    rating: 4.8,
+    reviewsCount: "254",
+    offersCount: 5,
+    address: "18, Mission Street, White Town, Puducherry – 605001",
+    phone: "+91 94422 18899",
+    gallery: [
+      "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80"
+    ],
+    about: "Premier unisex luxury salon and wellness spa in White Town. Specializing in hair transformations, organic facials, bridal packages, and therapeutic hair spa.",
+    hasVoucher: true,
+    vouchers: [
+      {
+        id: "vouch-bg-1",
+        title: "Flat 20% OFF Voucher on Any Salon Service",
+        discount: "20% OFF",
+        code: "BLOOM20",
+        expiry: "30 December 2026"
+      },
+      {
+        id: "vouch-bg-2",
+        title: "Free Hair Spa with Keratin Treatment",
+        discount: "FREE SPA",
+        code: "BLOOMSPA",
+        expiry: "15 November 2026"
+      }
+    ],
+    comments: [
+      { username: "Ananya S.", rating: 5, text: "Loved the L'Oreal Hair Spa! Scalp massage was heavenly and hair feels like silk.", date: "24 September 2026" },
+      { username: "Karthik R.", rating: 5, text: "Best haircut in White Town. Clean, professional and super courteous staff.", date: "18 September 2026" },
+      { username: "Sneha P.", rating: 4, text: "Great organic facial. Very relaxing ambiance with calming music.", date: "12 September 2026" }
+    ]
+  },
   {
     id: "biz-pizzahut",
     name: "Pizza Hut",
@@ -350,6 +456,135 @@ export const MOCK_BUSINESSES: Business[] = [
 ];
 
 export const INITIAL_MOCK_OFFERS: Offer[] = [
+  {
+    id: "off-bg-1",
+    title: "L'Oreal Luxury Hair Spa & Deep Conditioning",
+    subTitle: "On beauty parlour saloon",
+    description: "Intensive steam therapy, relaxing scalp massage, hair nourishing masque, and professional blow-dry styling.",
+    businessName: "Bloom & Glow Unisex Salon",
+    businessLogo: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&auto=format&fit=crop&q=80",
+    discount: "40% OFF",
+    rating: 4.8,
+    reviewsCount: "254",
+    code: "HAIRSPA40",
+    category: "Salon",
+    location: "18, Mission Street, White Town, Puducherry – 605001",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-23",
+    originalPrice: 1499,
+    ouiyaPrice: 899,
+    availabilities: ["Monday - Sunday: 9:00 AM - 9:00 PM"],
+    aboutOffer: "Intensive steam therapy, relaxing scalp massage, hair nourishing masque, and professional blow-dry styling.",
+    offerPeriod: "Valid until 23rd Dec 2026",
+    applicableOn: "In-store and Dine-in appointments only.",
+    termsAndConditions: [
+      "Prior appointment recommended for weekends.",
+      "Cannot be clubbed with other promotional coupons.",
+      "Valid exclusively at White Town branch."
+    ],
+    shopId: "biz-bloomglow"
+  },
+  {
+    id: "off-bg-2",
+    title: "Brightening Herbal Facial & De-Tan Therapy",
+    subTitle: "On beauty parlour saloon",
+    description: "Deep pore cleansing, organic fruit pack exfoliation, antioxidant serum infusion, and face massage.",
+    businessName: "Bloom & Glow Unisex Salon",
+    businessLogo: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&auto=format&fit=crop&q=80",
+    discount: "38% OFF",
+    rating: 4.9,
+    reviewsCount: "180",
+    code: "FACIAL38",
+    category: "Salon",
+    location: "18, Mission Street, White Town, Puducherry – 605001",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-23",
+    originalPrice: 1200,
+    ouiyaPrice: 749,
+    availabilities: ["Monday - Sunday: 9:00 AM - 9:00 PM"],
+    aboutOffer: "Deep pore cleansing, organic fruit pack exfoliation, antioxidant serum infusion, and face massage.",
+    offerPeriod: "Valid until 23rd Dec 2026",
+    applicableOn: "In-store appointments.",
+    termsAndConditions: ["Valid on all skin types."],
+    shopId: "biz-bloomglow"
+  },
+  {
+    id: "off-bg-3",
+    title: "Men's Executive Haircut & Beard Grooming",
+    subTitle: "On beauty parlour saloon",
+    description: "Precision clipper haircut, beard shaping with hot towel steam, and scalp rejuvenation massage.",
+    businessName: "Bloom & Glow Unisex Salon",
+    businessLogo: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop&q=80",
+    discount: "37% OFF",
+    rating: 4.7,
+    reviewsCount: "142",
+    code: "MEN37",
+    category: "Salon",
+    location: "18, Mission Street, White Town, Puducherry – 605001",
+    isTopOffer: false,
+    isCoupon: true,
+    expiryDate: "2026-12-23",
+    originalPrice: 550,
+    ouiyaPrice: 349,
+    availabilities: ["Monday - Sunday: 9:00 AM - 9:00 PM"],
+    aboutOffer: "Precision clipper haircut, beard shaping with hot towel steam, and scalp rejuvenation massage.",
+    offerPeriod: "Valid until 23rd Dec 2026",
+    applicableOn: "In-store service.",
+    termsAndConditions: ["No prior appointment needed on weekdays."],
+    shopId: "biz-bloomglow"
+  },
+  {
+    id: "off-bg-4",
+    title: "Premium Pedicure & Manicure Deluxe",
+    subTitle: "On beauty parlour saloon",
+    description: "Dead sea salt scrub, cuticle therapy, callus removal, nourishing cream massage, and gel polish finish.",
+    businessName: "Bloom & Glow Unisex Salon",
+    businessLogo: "https://images.unsplash.com/photo-1519014816548-bf785179c24c?w=800&auto=format&fit=crop&q=80",
+    discount: "40% OFF",
+    rating: 4.8,
+    reviewsCount: "98",
+    code: "NAILS40",
+    category: "Salon",
+    location: "18, Mission Street, White Town, Puducherry – 605001",
+    isTopOffer: false,
+    isCoupon: true,
+    expiryDate: "2026-12-23",
+    originalPrice: 999,
+    ouiyaPrice: 599,
+    availabilities: ["Monday - Sunday: 9:00 AM - 9:00 PM"],
+    aboutOffer: "Dead sea salt scrub, cuticle therapy, callus removal, nourishing cream massage, and gel polish finish.",
+    offerPeriod: "Valid until 23rd Dec 2026",
+    applicableOn: "In-store service.",
+    termsAndConditions: ["Includes complimentary beverage."],
+    shopId: "biz-bloomglow"
+  },
+  {
+    id: "off-bg-5",
+    title: "Flat 20% OFF Voucher on Any Salon Service",
+    subTitle: "On beauty parlour saloon",
+    description: "Applicable on any hair, skin, nail or bridal services of minimum billing ₹1000.",
+    businessName: "Bloom & Glow Unisex Salon",
+    businessLogo: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80",
+    discount: "Flat 20% OFF",
+    rating: 4.9,
+    reviewsCount: "310",
+    code: "FLAT20",
+    category: "Salon",
+    location: "18, Mission Street, White Town, Puducherry – 605001",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-30",
+    originalPrice: 1000,
+    ouiyaPrice: 800,
+    availabilities: ["Monday - Sunday: 9:00 AM - 9:00 PM"],
+    aboutOffer: "Applicable on any hair, skin, nail or bridal services of minimum billing ₹1000.",
+    offerPeriod: "Valid until 30th Dec 2026",
+    applicableOn: "Valid across all services.",
+    termsAndConditions: ["Minimum billing ₹1000."],
+    shopId: "biz-bloomglow"
+  },
   {
     id: "off-1",
     title: "Double Cheese Pizza",
@@ -757,7 +992,15 @@ export function mapFirestoreOffer(docId: string, data: any): Offer {
     rating: typeof data.rating === 'number' ? data.rating : 4.5,
     reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : (data.reviewsCount || "120 reviews"),
     code: data.promoCode || data.code || `OUIYA-${docId.substring(0, 6).toUpperCase()}`,
-    category: data.category ? (data.category.charAt(0).toUpperCase() + data.category.slice(1)) : "Food",
+    category: (() => {
+      const rawCat = (data.category || "Food").trim();
+      const rawNorm = rawCat.toLowerCase().replace(/[\s_]+/g, "");
+      const matched = OFFICIAL_CATEGORIES.find(c => 
+        c.id.toLowerCase().replace(/[\s_]+/g, "") === rawNorm ||
+        c.name.toLowerCase().replace(/[\s_]+/g, "") === rawNorm
+      );
+      return matched ? matched.name : (rawCat.charAt(0).toUpperCase() + rawCat.slice(1));
+    })(),
     subcategory: data.subcategory || data.subCategory || data.sub_category || "",
     location: data.shopAddress || data.location || "Puducherry",
     isTopOffer: Boolean(data.isFeatured || data.isTopOffer),
@@ -837,9 +1080,11 @@ export const getOffers = async (filters?: {
     const { category, query: searchQuery, location } = filters;
     
     if (category && category !== "All" && category !== "More" && category !== "For You") {
-      allOffers = allOffers.filter(
-        (o) => o.category.toLowerCase() === category.toLowerCase()
-      );
+      const catNorm = category.toLowerCase().replace(/[\s_]+/g, "");
+      allOffers = allOffers.filter((o) => {
+        const oNorm = (o.category || "").toLowerCase().replace(/[\s_]+/g, "");
+        return oNorm === catNorm || oNorm.includes(catNorm) || catNorm.includes(oNorm);
+      });
     }
     
     if (location && location !== "All Locations") {
@@ -864,21 +1109,87 @@ export const getOffers = async (filters?: {
 };
 
 // Query Firestore `users` collection for Businesses (with fallback to public `offers` collection)
+// Query Firestore `shops`, `businesses`, and `users` collections for Businesses (matching mobile & admin schema)
 export const getBusinessesFromFirebase = async (): Promise<Business[]> => {
-  let firestoreBusinesses: Business[] = [];
+  const shopsMap: Record<string, Business> = {};
+
+  // 1. Process `shops` collection (primary collection used by mobile app and admin)
   try {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    querySnapshot.forEach((doc: any) => {
+    const shopsSnap = await getDocs(collection(db, "shops"));
+    shopsSnap.forEach((doc: any) => {
       const data = doc.data();
-      if (data.role === "business" || data.businessCategory || data.ownerName) {
-        firestoreBusinesses.push(mapFirestoreBusiness(doc.id, data));
+      if (data.approvalStatus && data.approvalStatus !== "approved") return;
+      const id = doc.id;
+      const images = Array.isArray(data.images) ? data.images : (Array.isArray(data.imageUrls) ? data.imageUrls : []);
+      const singleImg = data.imageUrl || data.shopImageUrl || data.logo || data.logoUrl;
+      const heroImg = images.length > 0 ? images[0] : singleImg || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80";
+
+      shopsMap[id] = {
+        id: id,
+        name: data.name || data.displayName || data.businessName || "Local Partner",
+        logoUrl: heroImg,
+        rating: typeof data.rating === "number" ? data.rating : 4.5,
+        reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : (data.reviewsCount || "100+"),
+        offersCount: data.offersCount || 1,
+        address: data.address || data.location || "Pondicherry",
+        phone: data.phone || "+91 98765 43210",
+        gallery: images.length > 0 ? images : [heroImg],
+        about: data.description || data.about || "Verified local partner business on Ouiya.",
+        hasVoucher: Boolean(data.hasVoucher || (Array.isArray(data.vouchers) && data.vouchers.length > 0)),
+        vouchers: Array.isArray(data.vouchers) ? data.vouchers : [],
+        comments: Array.isArray(data.comments) ? data.comments : []
+      };
+    });
+  } catch {}
+
+  // 2. Process `businesses` collection
+  try {
+    const bizSnap = await getDocs(collection(db, "businesses"));
+    bizSnap.forEach((doc: any) => {
+      const data = doc.data();
+      const id = doc.id;
+      if (!shopsMap[id]) {
+        shopsMap[id] = mapFirestoreBusiness(id, data);
       }
     });
-  } catch {
-    // If users collection requires auth permission, extract shop details from public offers collection
-    try {
+  } catch {}
+
+  // 3. Process `users` collection for approved business merchants
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+    usersSnap.forEach((doc: any) => {
+      const data = doc.data();
+      const isBiz = data.role === "business" || data.businessCategory || data.ownerName;
+      if (!isBiz) return;
+      if (data.approvalStatus && data.approvalStatus !== "approved") return;
+      const id = doc.id;
+      const photoUrl = data.photoUrl || data.logo || data.logoUrl;
+      const name = data.businessName || data.displayName || data.name;
+      if (!name) return;
+
+      if (!shopsMap[id]) {
+        shopsMap[id] = {
+          id: id,
+          name: name,
+          logoUrl: photoUrl || "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=150&auto=format&fit=crop&q=80",
+          rating: typeof data.rating === "number" ? data.rating : 4.5,
+          reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : "100+",
+          offersCount: 1,
+          address: data.businessAddress || data.address || "Pondicherry",
+          phone: data.phone || "+91 98765 43210",
+          gallery: photoUrl ? [photoUrl] : [],
+          about: data.businessDescription || data.about || "Quality local business offering top deals.",
+          hasVoucher: Boolean(data.hasVoucher),
+          comments: []
+        };
+      }
+    });
+  } catch {}
+
+  // 4. Fallback: Extract from offers collection if needed
+  try {
+    if (Object.keys(shopsMap).length === 0) {
       const offersSnap = await getDocs(collection(db, "offers"));
-      const shopsMap: Record<string, Business> = {};
       offersSnap.forEach((doc: any) => {
         const data = doc.data();
         const shopId = data.shopId || `biz-${(data.shopName || data.businessName || doc.id).toLowerCase().replace(/\s+/g, "")}`;
@@ -887,7 +1198,7 @@ export const getBusinessesFromFirebase = async (): Promise<Business[]> => {
             id: shopId,
             name: data.shopName || data.businessName || "Local Partner",
             logoUrl: (Array.isArray(data.imageUrls) && data.imageUrls[0]) || data.businessLogo || "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=150&auto=format&fit=crop&q=80",
-            rating: typeof data.rating === 'number' ? data.rating : 4.5,
+            rating: typeof data.rating === "number" ? data.rating : 4.5,
             reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : "100+",
             offersCount: 1,
             address: data.shopAddress || data.location || "Puducherry",
@@ -901,13 +1212,11 @@ export const getBusinessesFromFirebase = async (): Promise<Business[]> => {
           };
         }
       });
-      firestoreBusinesses = Object.values(shopsMap);
-    } catch {
-      // Graceful error handle
     }
-  }
+  } catch {}
 
-  return firestoreBusinesses;
+  const result = Object.values(shopsMap);
+  return result.length > 0 ? result : MOCK_BUSINESSES;
 };
 
 // Query Firestore `reviews` collection for a shop
@@ -979,20 +1288,11 @@ export const createAdvertisement = async (ad: Omit<Offer, "id">): Promise<Offer>
 };
 
 export const getBusinesses = (): Business[] => {
-  return [];
+  return MOCK_BUSINESSES;
 };
 
 export const getCategories = (): Category[] => {
-  return [
-    { id: "cat-1", name: "Fashion", iconName: "Shirt", offersCount: 0 },
-    { id: "cat-2", name: "Mobiles", iconName: "Smartphone", offersCount: 0 },
-    { id: "cat-3", name: "Electronics", iconName: "Smartphone", offersCount: 0 },
-    { id: "cat-4", name: "Beauty", iconName: "Sparkles", offersCount: 0 },
-    { id: "cat-5", name: "Home", iconName: "Home", offersCount: 0 },
-    { id: "cat-6", name: "Food & Dining", iconName: "Utensils", offersCount: 0 },
-    { id: "cat-7", name: "Travel", iconName: "Plane", offersCount: 0 },
-    { id: "cat-8", name: "Automotive", iconName: "Car", offersCount: 0 }
-  ];
+  return OFFICIAL_CATEGORIES;
 };
 
 export const getAdvertiserStats = () => {
@@ -1058,18 +1358,50 @@ export const getCategoriesFromFirebase = async (): Promise<Category[]> => {
     const querySnapshot = await getDocs(collection(db, "categories"));
     querySnapshot.forEach((doc: any) => {
       const data = doc.data();
+      const catTitle = data.title || data.name || "Category";
+      const catId = doc.id;
+
+      // Match with official category in app sequence
+      const official = OFFICIAL_CATEGORIES.find(
+        (m) => m.id.toLowerCase() === catId.toLowerCase() || m.name.toLowerCase().trim() === catTitle.toLowerCase().trim()
+      );
+
+      const subcats = Array.isArray(data.subcategories) && data.subcategories.length > 0
+        ? data.subcategories
+        : (official ? official.subcategories : []);
+
       categories.push({
         id: doc.id,
-        name: data.title || data.name || "Category",
-        iconName: data.icon || "Sparkles",
+        name: catTitle,
+        iconName: data.icon || (official ? official.iconName : "/assets/category_icons/cat_accommodation.png"),
         offersCount: data.offersCount || 0,
-        subcategories: Array.isArray(data.subcategories) ? data.subcategories : []
+        subcategories: subcats
       });
     });
   } catch {
-    // Graceful fallback to static categories when offline or unauthenticated
+    // Graceful fallback to official categories when offline or unauthenticated
   }
-  return categories.length > 0 ? categories : getCategories();
+
+  // If no categories in Firestore, use official categories
+  if (categories.length === 0) {
+    return OFFICIAL_CATEGORIES;
+  }
+
+  // Sort categories in the exact sequence as the mobile app (kDefaultMockCategories)
+  categories.sort((a, b) => {
+    const aIndex = OFFICIAL_CATEGORIES.findIndex(
+      (m) => m.id.toLowerCase() === a.id.toLowerCase() || m.name.toLowerCase().trim() === a.name.toLowerCase().trim()
+    );
+    const bIndex = OFFICIAL_CATEGORIES.findIndex(
+      (m) => m.id.toLowerCase() === b.id.toLowerCase() || m.name.toLowerCase().trim() === b.name.toLowerCase().trim()
+    );
+    if (aIndex >= 0 && bIndex >= 0) return aIndex - bIndex;
+    if (aIndex >= 0) return -1;
+    if (bIndex >= 0) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  return categories;
 };
 
 export const getBannersFromFirebase = async (): Promise<AppBanner[]> => {

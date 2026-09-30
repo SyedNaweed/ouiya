@@ -40,6 +40,7 @@ interface AppContextProps {
   isAuthModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
+  completeAuthSuccess: () => void;
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
@@ -165,14 +166,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+  const completeAuthSuccess = () => {
     setIsAuthModalOpen(false);
     if (pendingActionOffer) {
       const offerToCart = pendingActionOffer;
       setPendingActionOffer(null);
       addToCartDirect(offerToCart);
     }
+  };
+
+  const loginWithGoogle = async () => {
+    await signInWithPopup(auth, googleProvider);
+    completeAuthSuccess();
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
@@ -468,6 +473,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isAuthModalOpen,
         openAuthModal,
         closeAuthModal,
+        completeAuthSuccess,
         loginWithGoogle,
         loginWithEmail,
         signUpWithEmail,

@@ -3,7 +3,22 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Tag, ShoppingCart, User as UserIcon, LogOut, LogIn, MapPin, ChevronDown, Bell, X } from "lucide-react";
+import { 
+  MapPin, 
+  ChevronDown, 
+  Search, 
+  Mic, 
+  ShoppingBag, 
+  Bell, 
+  User as UserIcon, 
+  LogOut, 
+  LogIn, 
+  Menu, 
+  X,
+  Compass,
+  Grid,
+  Home
+} from "lucide-react";
 import { useApp } from "../lib/AppContext";
 import ThemeToggle from "./ThemeToggle";
 
@@ -18,202 +33,344 @@ export default function Navbar() {
     logout,
     openAuthModal,
     location,
-    setLocation,
-    openLocationModal
+    openLocationModal,
+    searchQuery,
+    setSearchQuery
   } = useApp();
 
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [selectedLoc, setSelectedLoc] = useState("White Town, Pondicherry");
-  const [comingSoonCity, setComingSoonCity] = useState<string | null>(null);
-
+  const [voiceActive, setVoiceActive] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 8);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  return (
-    <nav
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 dark:bg-zinc-950/95 shadow-md backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800"
-          : "bg-white dark:bg-zinc-950 border-b border-zinc-100 dark:border-zinc-900"
-      }`}
-    >
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 md:h-20 items-center">
-          <div className="flex items-center min-w-0">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group shrink-0" onClick={() => setTab("home")}>
-              <div className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform duration-300">
-                <Tag className="w-5 h-5 md:w-6 md:h-6 rotate-90" />
-              </div>
-              <span className="text-xl md:text-2xl font-black tracking-tight text-zinc-900 dark:text-white">
-                ouiya<span className="text-primary">.</span>
-              </span>
-            </Link>
+  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-            {/* Location Selector */}
-            <div className="relative ml-2 sm:ml-3 lg:ml-6 hidden sm:block shrink-0">
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      setTab("home");
+      if (pathname !== "/") {
+        router.push("/");
+      }
+    }
+  };
+
+  const handleVoiceSearch = () => {
+    if (typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+      recognition.start();
+      setVoiceActive(true);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        setTab("categories");
+        setVoiceActive(false);
+        if (pathname !== "/") router.push("/");
+      };
+
+      recognition.onerror = () => {
+        setVoiceActive(false);
+      };
+
+      recognition.onend = () => {
+        setVoiceActive(false);
+      };
+    } else {
+      alert("Voice search is not supported in this browser. Please type your search.");
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-50 select-none shadow-md">
+      {/* ── Main Brand Red Header (Flipkart-style / Mobile App Style) ── */}
+      <div className="bg-gradient-to-r from-[#FA0303] via-[#DC0101] to-[#970202] text-white">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
+          
+          {/* DESKTOP HEADER ROW */}
+          <div className="hidden md:flex h-18 lg:h-20 items-center justify-between gap-4">
+            
+            {/* Left: Brand Logo & Location */}
+            <div className="flex items-center gap-4 shrink-0">
+              <Link 
+                href="/" 
+                onClick={() => setTab("home")} 
+                className="flex items-center gap-2.5 group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform overflow-hidden">
+                  <img 
+                    src="/assets/icons/Logo.png" 
+                    alt="Ouiya Logo" 
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/assets/images/logo.png";
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="flex items-baseline leading-none">
+                    <span className="text-2xl font-black tracking-tight text-white font-sans drop-shadow-sm">
+                      ouiya
+                    </span>
+                    <span className="text-amber-300 text-2xl font-black">.</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-black tracking-widest text-white/80 block mt-0.5">
+                    Offers & Deals
+                  </span>
+                </div>
+              </Link>
+
+              {/* Location Selector Pill */}
               <button
                 onClick={openLocationModal}
-                className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:bg-primary/20 cursor-pointer"
+                className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer backdrop-blur-sm shadow-xs"
+                title="Change Location"
               >
-                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                 <div className="text-left leading-tight">
-                  <span className="block font-black text-[10px] sm:text-[11px] truncate max-w-[85px] md:max-w-[100px] lg:max-w-none">{location}</span>
-                  <span className="hidden xl:block text-[9px] opacity-75 font-medium">Near Mahatma Gandhi Statue</span>
+                  <span className="block font-black text-xs truncate max-w-[130px] lg:max-w-[180px]">
+                    {location}
+                  </span>
                 </div>
-                <ChevronDown className="w-3 h-3 ml-0.5 shrink-0" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-80 shrink-0" />
               </button>
             </div>
 
-            {/* Navigation Links */}
-            <div className="hidden md:flex md:ml-3 lg:ml-6 items-center space-x-1 shrink-0">
+            {/* Center: Flipkart-style Search Bar */}
+            <div className="flex-1 max-w-xl mx-2">
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <div className="flex items-center bg-white dark:bg-[#1e1e1e] rounded-full shadow-md border border-white/20 overflow-hidden px-3.5 py-1.5 lg:py-2 transition-all focus-within:ring-2 focus-within:ring-white">
+                  <Search className="w-4 h-4 text-zinc-400 shrink-0 mr-2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for offers, stores & products..."
+                    className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs sm:text-sm font-medium focus:outline-none"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 mr-2 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    className={`p-1.5 rounded-full transition-colors cursor-pointer shrink-0 ${
+                      voiceActive ? "bg-red-500 text-white animate-pulse" : "bg-red-50 text-[#DC0101] hover:bg-red-100"
+                    }`}
+                    title="Voice Search"
+                  >
+                    <Mic className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Right: Quick Nav, Notification, Cart, Profile & Theme */}
+            <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+              
+              {/* Quick Navigation Links */}
+              <nav className="flex items-center gap-1">
+                <button
+                  onClick={() => { setTab("home"); if (pathname !== "/") router.push("/"); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === "home" && pathname === "/"
+                      ? "bg-white text-[#DC0101] shadow-sm font-black"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => { setTab("categories"); if (pathname !== "/") router.push("/"); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === "categories"
+                      ? "bg-white text-[#DC0101] shadow-sm font-black"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  Offers
+                </button>
+                <button
+                  onClick={() => { setTab("discover"); if (pathname !== "/") router.push("/"); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === "discover"
+                      ? "bg-white text-[#DC0101] shadow-sm font-black"
+                      : "text-white/90 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  Discover
+                </button>
+              </nav>
+
+              <div className="h-6 w-px bg-white/20 mx-1" />
+
+              {/* Cart Button */}
               <button
-                onClick={() => { setTab("home"); router.push("/"); }}
-                className={`inline-flex items-center px-2.5 lg:px-3.5 py-1.5 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                  activeTab === "home" && pathname === "/"
-                    ? "bg-primary/10 text-primary font-black"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                }`}
+                onClick={() => { setTab("cart"); if (pathname !== "/") router.push("/"); }}
+                className="relative p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all cursor-pointer"
+                title="View Cart"
               >
-                Home
+                <ShoppingBag className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
+                {totalCartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-amber-300 text-zinc-950 text-[9px] font-black rounded-full h-4 w-4 flex items-center justify-center border-2 border-[#DC0101] animate-pulse">
+                    {totalCartCount}
+                  </span>
+                )}
               </button>
+
+              {/* Notification Bell */}
               <button
-                onClick={() => { setTab("categories"); router.push("/"); }}
-                className={`inline-flex items-center px-2.5 lg:px-3.5 py-1.5 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                  activeTab === "categories" && pathname === "/"
-                    ? "bg-primary/10 text-primary font-black"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                }`}
+                onClick={toggleDrawer}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all cursor-pointer"
+                title="Notifications & Menu"
               >
-                Offers
+                <Bell className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
               </button>
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
+
+              {/* Authentication */}
+              {user ? (
+                <div className="flex items-center gap-2 bg-white/15 border border-white/30 rounded-full p-1 pl-2 shadow-sm">
+                  {user.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt="User avatar" 
+                      className="w-6 h-6 rounded-full object-cover border border-white/40" 
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center text-xs font-black uppercase">
+                      {user.displayName 
+                        ? user.displayName.charAt(0).toUpperCase() 
+                        : (user.phoneNumber ? user.phoneNumber.slice(-2) : (user.email ? user.email.charAt(0).toUpperCase() : "U"))}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-white max-w-[90px] truncate hidden xl:inline">
+                    {user.displayName || user.phoneNumber || user.email?.split("@")[0] || "User"}
+                  </span>
+                  <button
+                    onClick={logout}
+                    className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={openAuthModal}
+                  className="bg-white text-[#DC0101] hover:bg-white/95 font-black text-xs px-4 py-2 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Login</span>
+                </button>
+              )}
+
+              {/* Side Drawer Menu Trigger */}
               <button
-                onClick={() => { setTab("discover"); router.push("/"); }}
-                className={`inline-flex items-center px-2.5 lg:px-3.5 py-1.5 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                  activeTab === "discover"
-                    ? "bg-primary/10 text-primary font-black"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                }`}
+                onClick={toggleDrawer}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all cursor-pointer"
+                title="Open Side Menu"
               >
-                <span>Discover Pondicherry</span>
+                <Menu className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>
 
-          {/* Right Side Options */}
-          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
-            {/* Theme Toggle Button */}
-            <ThemeToggle />
-
-            {/* Cart Icon */}
-            <button
-              onClick={() => { setTab("cart"); router.push("/"); }}
-              className="relative p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:scale-105 transition-all duration-200 cursor-pointer focus:outline-none bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full hidden md:flex"
-              title="View Cart"
-            >
-              <ShoppingCart className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] font-black rounded-full h-4.5 w-4.5 flex items-center justify-center border-2 border-white dark:border-zinc-950 animate-pulse">
-                  {cart.length}
-                </span>
-              )}
-            </button>
-
-            {/* Authentication Controls */}
-            {user ? (
-              <div className="flex items-center gap-1.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 rounded-full p-1 pl-1 lg:pl-2.5 shadow-sm">
-                {user.photoURL ? (
-                  <img 
-                    src={user.photoURL} 
-                    alt={user.displayName || "User"} 
-                    className="w-7 h-7 rounded-full object-cover border border-zinc-300 dark:border-zinc-700" 
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary-dark to-primary flex items-center justify-center text-white text-xs font-black uppercase shadow-sm">
-                    {user.email ? user.email.charAt(0) : "U"}
+          {/* MOBILE HEADER (Matches Mobile App _AnimatedHeaderBar) */}
+          <div className="md:hidden py-2.5 space-y-2">
+            
+            {/* Mobile Row 1: Location + Profile Avatar & Notifications */}
+            <div className="flex items-center justify-between">
+              
+              {/* Location selector */}
+              <button
+                onClick={openLocationModal}
+                className="flex items-center gap-1.5 text-left text-white cursor-pointer"
+              >
+                <MapPin className="w-4 h-4 text-white shrink-0" />
+                <div className="leading-tight">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-extrabold tracking-tight truncate max-w-[190px]">
+                      {location.split(",")[0] || "Pondicherry"}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 opacity-90" />
                   </div>
-                )}
+                  <span className="text-[10px] text-white/85 font-medium block">
+                    Pondicherry
+                  </span>
+                </div>
+              </button>
 
-                <span className="text-xs font-black text-zinc-800 dark:text-zinc-200 max-w-[100px] truncate hidden lg:inline">
-                  {user.displayName || user.email?.split("@")[0] || "Account"}
-                </span>
+              {/* Right: Notifications & Profile */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleDrawer}
+                  className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white"
+                  title="Notifications"
+                >
+                  <Bell className="w-4 h-4" />
+                </button>
 
                 <button
-                  onClick={logout}
-                  className="p-1 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 hover:text-red-500 transition-colors cursor-pointer hidden lg:inline-flex"
-                  title="Sign Out"
+                  onClick={user ? toggleDrawer : openAuthModal}
+                  className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white overflow-hidden"
+                  title="Account"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  {user?.photoURL ? (
+                    <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-4 h-4" />
+                  )}
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={openAuthModal}
-                className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-black transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer shrink-0"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Login / Sign Up</span>
-              </button>
-            )}
+            </div>
 
-            {/* Menu Drawer Toggle Button */}
-            <button
-              onClick={toggleDrawer}
-              className="relative w-9 h-9 sm:w-10 sm:h-10 flex flex-col justify-center items-center gap-[4.5px] rounded-full text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-200 focus:outline-none cursor-pointer shrink-0"
-              title="Open Navigation Menu"
-            >
-              <span className={`w-5 h-[2px] bg-current rounded-full transition-all duration-300 origin-center ${isDrawerOpen ? "rotate-45 translate-y-[6.5px]" : ""}`} />
-              <span className={`w-5 h-[2px] bg-current rounded-full transition-all duration-300 origin-center ${isDrawerOpen ? "opacity-0" : ""}`} />
-              <span className={`w-5 h-[2px] bg-current rounded-full transition-all duration-300 origin-center ${isDrawerOpen ? "-rotate-45 -translate-y-[6.5px]" : ""}`} />
-            </button>
+            {/* Mobile Row 2: Search Bar Pill */}
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <div className="flex items-center bg-white dark:bg-[#1e1e1e] rounded-full shadow-md px-3.5 py-2">
+                <Search className="w-4 h-4 text-zinc-400 shrink-0 mr-2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for offers, stores & products..."
+                  className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 text-xs font-medium focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`p-1 rounded-full shrink-0 ml-1 ${
+                    voiceActive ? "bg-red-500 text-white animate-pulse" : "bg-red-50 text-[#DC0101]"
+                  }`}
+                  title="Voice Search"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </form>
 
           </div>
+
         </div>
       </div>
-
-      {/* Coming Soon Modal Popup for other states (Annotated wireframe Image 1 rule) */}
-      {comingSoonCity && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative animate-scale-up text-center space-y-4">
-            <button
-              onClick={() => setComingSoonCity(null)}
-              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="w-14 h-14 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
-              <Bell className="w-7 h-7" />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-500/20">
-                Coming Soon 🚀
-              </span>
-              <h3 className="text-lg font-black text-zinc-900 dark:text-white pt-2">{comingSoonCity}</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                Ouiya is currently operational in <strong className="text-red-600 dark:text-red-400">Pondicherry</strong>. We are launching in {comingSoonCity} soon!
-              </p>
-            </div>
-
-            <button
-              onClick={() => setComingSoonCity(null)}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl text-xs shadow-lg transition-transform active:scale-95 cursor-pointer"
-            >
-              Explore Pondicherry Deals
-            </button>
-          </div>
-        </div>
-      )}
-    </nav>
+    </header>
   );
 }

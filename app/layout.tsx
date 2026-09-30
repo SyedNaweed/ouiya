@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "../lib/AppContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "OUIYA - The Offer Explorer",
-  description: "Discover amazing deals, exclusive coupons & exciting dining/shopping offers near you.",
+  title: "OUIYA - The Offer Explorer | Verified Local Deals in Pondicherry",
+  description: "Discover verified discount coupons, hotel vouchers, french bistros, two wheeler rentals & exclusive lifestyle deals in Pondicherry.",
+  keywords: ["Pondicherry deals", "Ouiya", "Puducherry offers", "White Town restaurants", "Pondy scooter rental"],
 };
 
 export default function RootLayout({
@@ -26,12 +24,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} font-sans h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+      <body className="min-h-full flex flex-col bg-[#F8FAFC] dark:bg-[#0B0F19] text-zinc-900 dark:text-zinc-100 selection:bg-[#DC0101] selection:text-white">
         <AppProvider>{children}</AppProvider>
       </body>
     </html>
   );
 }
-
