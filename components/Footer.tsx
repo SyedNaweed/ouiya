@@ -40,7 +40,7 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="bg-zinc-50 border-t border-zinc-100 dark:bg-zinc-950 dark:border-zinc-800 select-none">
+      <footer className="bg-white border-t border-zinc-200 dark:bg-[#1E1E1E] dark:border-[#27272A] select-none">
         <div className="max-w-[1600px] mx-auto px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             
@@ -50,11 +50,13 @@ export default function Footer() {
                 onClick={() => handleNav("home")} 
                 className="flex items-center gap-2 group mb-6 text-left cursor-pointer focus:outline-none"
               >
-                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-transform bg-white dark:bg-zinc-800 p-0.5 border border-zinc-200 dark:border-zinc-800">
+                <div className="w-10 h-10 min-w-[40px] max-w-[40px] shrink-0 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-transform bg-white dark:bg-zinc-800 p-0.5 border border-zinc-200 dark:border-zinc-800">
                   <img 
                     src="/assets/icons/Logo.png" 
                     alt="Ouiya Logo" 
-                    className="w-full h-full object-contain"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain max-w-full max-h-full"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = "/assets/images/logo.png";
                     }}

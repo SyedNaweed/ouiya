@@ -10,7 +10,8 @@ import {
   Offer, 
   Business, 
   Category, 
-  matchesSubCategory 
+  matchesSubCategory,
+  normalizeCategory
 } from "../../lib/db";
 import CategoryBannerCarousel from "../../components/CategoryBannerCarousel";
 import OfferCard from "../../components/OfferCard";
@@ -180,6 +181,8 @@ export default function CategoryBrowseView() {
     fetchData();
   }, [selectedCategory, searchQuery]);
 
+  const isAll = !selectedCategory || ["all", "all deals", "all categories"].includes(selectedCategory.toLowerCase().trim());
+
   const handleBack = () => {
     setSelectedCategory("All");
     setSearchQuery("");
@@ -187,8 +190,9 @@ export default function CategoryBrowseView() {
   };
 
   const subCategoriesList = useMemo(() => {
-    if (!selectedCategory || selectedCategory === "All") return ["All", "Top Rated", "New Arrivals", "Best Discount"];
-    const catKey = selectedCategory.toLowerCase().trim();
+    if (isAll) return ["All", "Top Rated", "New Arrivals", "Best Discount"];
+    const norm = normalizeCategory(selectedCategory);
+    const catKey = norm.toLowerCase().trim();
     
     const activeCatDoc = categoriesList.find(c => {
       const name = (c.name || "").toLowerCase().trim();
@@ -200,8 +204,8 @@ export default function CategoryBrowseView() {
       return ["All", ...activeCatDoc.subcategories];
     }
 
-    return SUB_CATEGORIES[selectedCategory] || ["All", "Top Rated", "New Arrivals", "Best Discount"];
-  }, [selectedCategory, categoriesList]);
+    return SUB_CATEGORIES[norm] || SUB_CATEGORIES[selectedCategory] || ["All", "Top Rated", "New Arrivals", "Best Discount"];
+  }, [selectedCategory, isAll, categoriesList]);
 
   // Filtered offers by sub-category tab
   const filteredOffers = useMemo(() => {
@@ -210,7 +214,7 @@ export default function CategoryBrowseView() {
   }, [offers, activeSubCategory]);
 
   return (
-    <div className="w-full pb-24 animate-fade-in select-none bg-zinc-50 dark:bg-[#0b0f19]">
+    <div className="w-full pb-24 animate-fade-in select-none bg-[#F7F7F7] dark:bg-[#18181B]">
       
       {/* 1. Header Navigation */}
       <div className="sticky top-16 z-30 bg-white dark:bg-[#121620] border-b border-zinc-200/80 dark:border-zinc-800 px-3 sm:px-8 py-3.5 shadow-sm space-y-3">
@@ -225,7 +229,7 @@ export default function CategoryBrowseView() {
             </button>
             <div>
               <h2 className="text-sm sm:text-base font-black tracking-tight text-zinc-900 dark:text-white leading-tight">
-                {searchQuery ? `Search: "${searchQuery}"` : (selectedCategory === "All" ? "All Categories" : selectedCategory)}
+                {searchQuery ? `Search: "${searchQuery}"` : (isAll ? "All Categories" : selectedCategory)}
               </h2>
               <span className="text-[10.5px] text-zinc-500 font-semibold">
                 {filteredOffers.length} Verified Deals in Pondicherry
@@ -236,7 +240,7 @@ export default function CategoryBrowseView() {
           <button
             onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
             className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
-              selectedCategory === "All"
+              isAll
                 ? "bg-[#DC0101] text-white shadow-sm"
                 : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             }`}
@@ -250,7 +254,7 @@ export default function CategoryBrowseView() {
           <button
             onClick={() => setSelectedCategory("All")}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              selectedCategory === "All" 
+              isAll 
                 ? "bg-[#DC0101] text-white shadow-sm scale-102" 
                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
@@ -259,7 +263,10 @@ export default function CategoryBrowseView() {
             <span>All Deals</span>
           </button>
           {categoriesList.map((cat) => {
-            const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
+            const isSelected = !isAll && (
+              selectedCategory.toLowerCase() === cat.name.toLowerCase() ||
+              selectedCategory.toLowerCase() === cat.id.toLowerCase()
+            );
             const iconPath = resolveCategoryIcon(cat.name);
 
             return (
@@ -317,7 +324,7 @@ export default function CategoryBrowseView() {
           <div className="flex justify-between items-center border-b border-zinc-200/80 dark:border-zinc-800/80 pb-2.5">
             <h3 className="text-base font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
               <Tag className="w-4 h-4 text-[#DC0101]" />
-              <span>{selectedCategory === "All" ? "All Verified Deals" : `${selectedCategory} Deals`}</span>
+              <span>{isAll ? "All Verified Deals" : `${selectedCategory} Deals`}</span>
             </h3>
             <span className="text-xs font-bold text-zinc-500">
               {filteredOffers.length} Deals Found
@@ -349,7 +356,7 @@ export default function CategoryBrowseView() {
                 onClick={() => setActiveSubCategory("All")}
                 className="bg-[#DC0101] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-[#B91C1C] transition-all cursor-pointer"
               >
-                Show All {selectedCategory} Deals
+                Show All {isAll ? "" : selectedCategory} Deals
               </button>
             </div>
           )}

@@ -55,18 +55,25 @@ export default function CategoryBannerCarousel({
     return null;
   }
 
-  const currentBanner = banners[currentIndex];
+  const currentBanner = (banners && banners.length > 0) ? (banners[currentIndex] || banners[0]) : null;
+
+  if (!currentBanner) {
+    return null;
+  }
 
   const handlePrev = () => {
+    if (!banners || banners.length === 0) return;
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
   const handleNext = () => {
+    if (!banners || banners.length === 0) return;
     setCurrentIndex((prev) => (prev + 1) % banners.length);
   };
 
   const handleBannerClick = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    if (!currentBanner) return;
 
     if (currentBanner.targetOfferId && onSelectBannerOffer) {
       onSelectBannerOffer(currentBanner.targetOfferId);
@@ -134,7 +141,7 @@ export default function CategoryBannerCarousel({
         onClick={handleBannerClick}
       >
         <img
-          src={currentBanner.imageUrl}
+          src={currentBanner.imageUrl || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800"}
           alt={currentBanner.title || "Category Banner"}
           className="w-full h-full object-cover transition-all duration-700 ease-out"
         />

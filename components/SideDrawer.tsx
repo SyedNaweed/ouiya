@@ -57,18 +57,27 @@ export default function SideDrawer() {
     qrText: string;
   }[]>([]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setAvatarError(false);
+  const dataFetchedRef = useRef(false);
 
+  useEffect(() => {
+    if (!isDrawerOpen) {
+      setCurrentView("main");
+      return;
+    }
+
+    setAvatarError(false);
+
+    if (!dataFetchedRef.current) {
+      dataFetchedRef.current = true;
       getOffers().then(setOffersList).catch(() => {});
       getBusinessesFromFirebase().then(setBusinessesList).catch(() => {});
 
-      const loadPurchases = () => {
+      if (typeof window !== "undefined") {
         const stored = localStorage.getItem("ouiya_purchased_coupons");
         if (stored) {
           try {
-            setPurchases(JSON.parse(stored));
+            const parsed = JSON.parse(stored);
+            setPurchases(Array.isArray(parsed) && parsed.length > 0 ? parsed : []);
           } catch {
             setPurchases([]);
           }
@@ -93,11 +102,12 @@ export default function SideDrawer() {
               qrText: "OUIYABRGR50"
             }
           ];
-          localStorage.setItem("ouiya_purchased_coupons", JSON.stringify(defaults));
+          try {
+            localStorage.setItem("ouiya_purchased_coupons", JSON.stringify(defaults));
+          } catch {}
           setPurchases(defaults);
         }
-      };
-      loadPurchases();
+      }
     }
   }, [isDrawerOpen]);
 
@@ -134,13 +144,7 @@ export default function SideDrawer() {
     setTab("cart");
   };
 
-  // Reset view when drawer closes/opens
-  useEffect(() => {
-    if (!isDrawerOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentView("main");
-    }
-  }, [isDrawerOpen]);
+
 
 
 
@@ -230,7 +234,7 @@ export default function SideDrawer() {
           transform: isDrawerOpen ? `translateX(${currentX}px)` : "translateX(100%)",
           transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
         }}
-        className="relative w-full sm:w-[400px] h-full bg-white dark:bg-zinc-950 shadow-2xl flex flex-col z-10 overflow-hidden border-l border-zinc-150 dark:border-zinc-900 transition-transform duration-300"
+        className="relative w-full sm:w-[400px] h-full bg-white dark:bg-[#1E1E1E] shadow-2xl flex flex-col z-10 overflow-hidden border-l border-zinc-200 dark:border-[#27272A] transition-transform duration-300"
       >
         
         {/* VIEW 1: Main Navigation Drawer Drawer */}
@@ -372,7 +376,7 @@ export default function SideDrawer() {
 
         {/* VIEW 2: Profile Sub-View (Matches App Mockup 1) */}
         {currentView === "profile" && (
-          <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B]">
             {/* Header: Red Gradient with Avatar */}
             <div className="bg-gradient-to-b from-primary-dark via-primary to-primary-hover p-6 pb-12 text-white relative shrink-0 flex flex-col items-center">
               <button 
@@ -442,12 +446,12 @@ export default function SideDrawer() {
                   <Sun className="w-4.5 h-4.5 text-zinc-500 shrink-0" />
                   <span>Theme Preference</span>
                 </div>
-                <div className="grid grid-cols-3 gap-1 bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200/50 dark:border-zinc-800">
+                <div className="grid grid-cols-3 gap-1 bg-zinc-100 dark:bg-[#18181B] p-1 rounded-xl border border-zinc-200/50 dark:border-[#27272A]">
                   <button
                     onClick={() => setThemeMode("light")}
                     className={`py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all text-center cursor-pointer ${
                       themeMode === "light" 
-                        ? "bg-white text-zinc-950 shadow-sm" 
+                        ? "bg-white text-zinc-900 shadow-sm" 
                         : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                     }`}
                   >
@@ -535,7 +539,7 @@ export default function SideDrawer() {
           const hasAny = likedShopItems.length > 0 || likedOfferItems.length > 0;
 
           return (
-            <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+            <div className="h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B]">
               {/* Header */}
               <div className="bg-gradient-to-r from-primary-dark via-primary to-primary p-5 text-white flex items-center gap-3 shrink-0 relative shadow-md">
                 <button 
@@ -639,7 +643,7 @@ export default function SideDrawer() {
 
         {/* VIEW 4: Purchases Sub-View (Matches App Mockup 3) */}
         {currentView === "purchases" && (
-          <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B]">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-dark via-primary to-primary p-5 text-white flex items-center gap-3 shrink-0 relative shadow-md">
               <button 
@@ -677,7 +681,7 @@ export default function SideDrawer() {
                   {/* QR details section */}
                   <div className="p-5 flex flex-col items-center gap-3">
                     {/* Dummy QR representation */}
-                    <div className="w-28 h-28 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 flex flex-col items-center justify-center relative group">
+                    <div className="w-28 h-28 bg-zinc-50 dark:bg-[#18181B] border border-zinc-200 dark:border-[#27272A] rounded-2xl p-2.5 flex flex-col items-center justify-center relative group">
                       <div className="grid grid-cols-5 gap-1.5 w-full h-full opacity-80">
                         {Array.from({ length: 25 }).map((_, idx) => (
                           <div 
@@ -715,7 +719,7 @@ export default function SideDrawer() {
 
         {/* VIEW 4: Subscription Plans Sub-View (Matches App Mockup 2) */}
         {currentView === "subscriptions" && (
-          <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B]">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-dark via-primary to-primary p-5 text-white flex items-center gap-3 shrink-0 relative shadow-md">
               <button 
@@ -859,7 +863,7 @@ export default function SideDrawer() {
 
         {/* VIEW 5: Refer a Friend Sub-View */}
         {currentView === "refer" && (
-          <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B]">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-dark via-primary to-primary p-5 text-white flex items-center gap-3 shrink-0 relative shadow-md">
               <button 
@@ -890,7 +894,7 @@ export default function SideDrawer() {
                   Your Referral Code
                 </span>
                 
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 flex justify-between items-center">
+                <div className="bg-zinc-50 dark:bg-[#18181B] border border-dashed border-zinc-200 dark:border-[#27272A] rounded-2xl p-4 flex justify-between items-center">
                   <span className="text-base font-mono font-black tracking-widest text-zinc-850 dark:text-zinc-100">
                     OUIYA50REF
                   </span>

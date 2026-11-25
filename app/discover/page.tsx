@@ -60,10 +60,10 @@ export default function DiscoverPondicherryView() {
   });
 
   return (
-    <div className="w-full pb-28 animate-fade-in select-none bg-white dark:bg-[#0b0f19]">
+    <div className="w-full pb-28 animate-fade-in select-none bg-[#F7F7F7] dark:bg-[#18181B]">
       
       {/* 1. Hero Section — French Riviera Theme with Dynamic Background Slideshow */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-blue-950 via-indigo-950 to-[#0b0f19] text-white px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-b border-zinc-800">
+      <div className="relative overflow-hidden bg-gradient-to-b from-blue-950 via-indigo-950 to-[#18181B] text-white px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-b border-zinc-800">
         
         {/* Dynamic Background Image Carousel */}
         {HERO_SLIDES.map((slide, idx) => (
@@ -81,7 +81,7 @@ export default function DiscoverPondicherryView() {
           </div>
         ))}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f19] via-indigo-950/70 to-transparent z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#18181B] via-indigo-950/70 to-transparent z-0" />
 
         <div className="relative z-10 max-w-[1600px] mx-auto space-y-6 text-center lg:text-left">
           
@@ -210,7 +210,7 @@ export default function DiscoverPondicherryView() {
               <div
                 key={dest.id}
                 onClick={() => openDestinationDetails(dest)}
-                className="group bg-white dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl overflow-hidden hover:border-primary/50 dark:hover:border-primary/50 transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between cursor-pointer"
+                className="group bg-white dark:bg-[#1E1E1E] border border-zinc-200/80 dark:border-[#27272A] rounded-3xl overflow-hidden hover:border-primary/50 dark:hover:border-primary/50 transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between cursor-pointer"
               >
                 {/* Image Container */}
                 <div className="relative h-56 w-full overflow-hidden bg-zinc-800">
@@ -227,7 +227,7 @@ export default function DiscoverPondicherryView() {
                   </div>
 
                   {/* Rating Badge */}
-                  <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md text-zinc-900 dark:text-white text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+                  <div className="absolute top-3 right-3 bg-white/90 dark:bg-[#1E1E1E]/90 backdrop-blur-md text-zinc-900 dark:text-white text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
                     <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                     <span>{dest.rating}</span>
                   </div>
@@ -250,7 +250,7 @@ export default function DiscoverPondicherryView() {
                     {dest.tagline}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950/60 p-3 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-[#18181B] p-3 rounded-2xl border border-zinc-100 dark:border-[#27272A]">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <span className="truncate">{dest.estimatedDuration}</span>

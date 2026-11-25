@@ -107,11 +107,13 @@ export default function Navbar() {
                 onClick={() => setTab("home")} 
                 className="flex items-center gap-2.5 group"
               >
-                <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform overflow-hidden">
+                <div className="w-10 h-10 min-w-[40px] max-w-[40px] shrink-0 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform overflow-hidden">
                   <img 
                     src="/assets/icons/Logo.png" 
                     alt="Ouiya Logo" 
-                    className="w-full h-full object-contain"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain max-w-full max-h-full"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = "/assets/images/logo.png";
                     }}
@@ -132,7 +134,7 @@ export default function Navbar() {
 
               {/* Location Selector Pill */}
               <button
-                onClick={openLocationModal}
+                onClick={() => openLocationModal(false)}
                 className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer backdrop-blur-sm shadow-xs"
                 title="Change Location"
               >
@@ -302,7 +304,7 @@ export default function Navbar() {
               
               {/* Location selector */}
               <button
-                onClick={openLocationModal}
+                onClick={() => openLocationModal(false)}
                 className="flex items-center gap-1.5 text-left text-white cursor-pointer"
               >
                 <MapPin className="w-4 h-4 text-white shrink-0" />

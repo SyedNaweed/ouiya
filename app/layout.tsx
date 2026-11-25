@@ -1,19 +1,35 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "../lib/AppContext";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-sans",
-  display: "swap",
-});
+export const viewport: Viewport = {
+  themeColor: "#DC0101",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "OUIYA - The Offer Explorer | Verified Local Deals in Pondicherry",
   description: "Discover verified discount coupons, hotel vouchers, french bistros, two wheeler rentals & exclusive lifestyle deals in Pondicherry.",
-  keywords: ["Pondicherry deals", "Ouiya", "Puducherry offers", "White Town restaurants", "Pondy scooter rental"],
+  keywords: ["Pondicherry deals", "Ouiya", "Puducherry offers", "White Town restaurants", "Pondy scooter rental", "Pondicherry resorts"],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ouiya.in"),
+  openGraph: {
+    title: "OUIYA - The Offer Explorer",
+    description: "Verified Local Deals, Discounts & Vouchers in Pondicherry",
+    siteName: "OUIYA Pondicherry",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OUIYA - The Offer Explorer",
+    description: "Verified Local Deals, Discounts & Vouchers in Pondicherry",
+  },
+  icons: {
+    icon: "/assets/icons/Logo.png",
+    apple: "/assets/icons/Logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -24,9 +40,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} font-sans h-full antialiased scroll-smooth`}
+      className="font-sans h-full antialiased scroll-smooth"
     >
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] dark:bg-[#0B0F19] text-zinc-900 dark:text-zinc-100 selection:bg-[#DC0101] selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#F7F7F7] dark:bg-[#18181B] text-[#1A1A1A] dark:text-[#F9FAFB] selection:bg-[#DC0101] selection:text-white">
         <AppProvider>{children}</AppProvider>
       </body>
     </html>

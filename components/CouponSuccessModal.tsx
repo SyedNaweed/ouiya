@@ -33,10 +33,10 @@ export default function CouponSuccessModal() {
       />
 
       {/* Modal Container */}
-      <div className="relative bg-white dark:bg-zinc-900 w-full h-full md:h-auto md:max-w-md md:rounded-3xl shadow-2xl overflow-y-auto no-scrollbar z-10 flex flex-col animate-slide-up border border-zinc-200 dark:border-zinc-800">
+      <div className="relative bg-white dark:bg-[#1E1E1E] w-full h-full md:h-auto md:max-w-md md:rounded-3xl shadow-2xl overflow-y-auto no-scrollbar z-10 flex flex-col animate-slide-up border border-zinc-200 dark:border-[#27272A]">
         
-        {/* Header Banner (Wireframe Image 5: Payment Successful) */}
-        <div className="bg-red-600 px-6 py-6 text-white text-center flex flex-col items-center relative shrink-0 shadow-md">
+        {/* Header Banner (Matching Mobile App Payment Success) */}
+        <div className="bg-gradient-to-r from-[#FA0303] via-[#DC0101] to-[#970202] px-6 py-6 text-white text-center flex flex-col items-center relative shrink-0 shadow-md">
           <button 
             onClick={closeCouponSuccess}
             className="absolute top-4 left-4 hover:bg-white/10 p-2 rounded-full transition-colors cursor-pointer"
@@ -44,7 +44,7 @@ export default function CouponSuccessModal() {
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
 
-          <div className="w-14 h-14 bg-white text-red-600 rounded-full flex items-center justify-center shadow-lg mb-2 mt-2">
+          <div className="w-14 h-14 bg-white text-[#DC0101] rounded-full flex items-center justify-center shadow-lg mb-2 mt-2">
             <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
           </div>
 
@@ -53,10 +53,10 @@ export default function CouponSuccessModal() {
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5 bg-zinc-50 dark:bg-zinc-950">
+        <div className="p-6 space-y-5 bg-[#F7F7F7] dark:bg-[#18181B]">
 
           {/* QR Code Container (Wireframe Image 5) */}
-          <div className="bg-white dark:bg-zinc-900 p-5 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-md text-center space-y-3">
+          <div className="bg-white dark:bg-[#1E1E1E] p-5 rounded-3xl border border-zinc-200 dark:border-[#27272A] shadow-md text-center space-y-3">
             <div className="bg-white p-4 rounded-2xl shadow-inner border border-zinc-200 max-w-[180px] mx-auto aspect-square flex items-center justify-center">
               <svg 
                 viewBox="0 0 29 29" 
@@ -88,7 +88,7 @@ export default function CouponSuccessModal() {
           </div>
 
           {/* Order Info Card (Wireframe Image 5) */}
-          <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
+          <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl border border-zinc-200 dark:border-[#27272A] text-xs space-y-2">
             <div className="flex justify-between items-center text-zinc-500">
               <span>Order ID</span>
               <span className="font-mono font-bold text-zinc-900 dark:text-white">{orderId}</span>

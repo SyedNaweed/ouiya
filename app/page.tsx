@@ -9,13 +9,15 @@ import {
   getBannersFromFirebase,
   getPromoBannersFromFirebase,
   getHotspotsFromFirebase,
+  OFFICIAL_CATEGORIES,
   Offer, 
   Category, 
   Business,
   AppBanner,
   PromoBanner,
   Hotspot,
-  matchesSubCategory
+  matchesSubCategory,
+  normalizeCategory
 } from "../lib/db";
 import CategoryBannerCarousel from "../components/CategoryBannerCarousel";
 import BottomNav from "../components/BottomNav";
@@ -31,6 +33,7 @@ import Navbar from "../components/Navbar";
 import SideDrawer from "../components/SideDrawer";
 import Footer from "../components/Footer";
 import AuthModal from "../components/AuthModal";
+import LocationModal from "../components/LocationModal";
 import DestinationDetailModal from "../components/DestinationDetailModal";
 
 // Views
@@ -155,10 +158,15 @@ export default function AppHome() {
     likedOffers,
     toggleOfferLike,
     cartConflictOffer,
-    resolveCartConflict
+    resolveCartConflict,
+    location,
+    isLocationModalOpen,
+    isLocationPrompt,
+    closeLocationModal,
+    setLocation
   } = useApp();
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(OFFICIAL_CATEGORIES);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [banners, setBanners] = useState<AppBanner[]>([]);
@@ -232,7 +240,8 @@ export default function AppHome() {
   // Subcategories loaded dynamically
   const subCategoriesList = useMemo(() => {
     if (!selectedCategory || selectedCategory === "All") return [];
-    const catKey = selectedCategory.toLowerCase().trim();
+    const norm = normalizeCategory(selectedCategory);
+    const catKey = norm.toLowerCase().trim();
     
     const activeCatDoc = categories.find(c => {
       const name = (c.name || "").toLowerCase().trim();
@@ -244,26 +253,29 @@ export default function AppHome() {
       return ["All", ...activeCatDoc.subcategories];
     }
 
-    return SUB_CATEGORIES_MAP[catKey] || ["All", "Top Rated", "Best Discounts", "New Arrivals"];
+    return SUB_CATEGORIES_MAP[norm.toLowerCase()] || SUB_CATEGORIES_MAP[catKey] || ["All", "Top Rated", "Best Discounts", "New Arrivals"];
   }, [selectedCategory, categories]);
 
   // Filtered category offers for real-time category switching
   const filteredCategoryOffers = useMemo(() => {
     if (!selectedCategory || selectedCategory === "All") return offers;
-    const catLower = selectedCategory.toLowerCase().trim();
+    const catTargetNorm = normalizeCategory(selectedCategory).toLowerCase().replace(/[^a-z0-9]/g, "");
+
     return offers.filter((o) => {
-      const oCat = (o.category || "").toLowerCase();
+      const oCatNorm = normalizeCategory(o.category).toLowerCase().replace(/[^a-z0-9]/g, "");
+      const oRawNorm = (o.category || "").toLowerCase().replace(/[^a-z0-9]/g, "");
       const oTitle = (o.title || "").toLowerCase();
       const oBiz = (o.businessName || "").toLowerCase();
       const oSub = (o.subTitle || "").toLowerCase();
 
       return (
-        oCat === catLower ||
-        oCat.includes(catLower) ||
-        catLower.includes(oCat) ||
-        oTitle.includes(catLower) ||
-        oBiz.includes(catLower) ||
-        oSub.includes(catLower)
+        oCatNorm === catTargetNorm ||
+        oRawNorm === catTargetNorm ||
+        oCatNorm.includes(catTargetNorm) ||
+        catTargetNorm.includes(oCatNorm) ||
+        oTitle.includes(selectedCategory.toLowerCase()) ||
+        oBiz.includes(selectedCategory.toLowerCase()) ||
+        oSub.includes(selectedCategory.toLowerCase())
       );
     });
   }, [offers, selectedCategory]);
@@ -290,11 +302,11 @@ export default function AppHome() {
     const isAll = !selectedCategory || selectedCategory === "All";
 
     return (
-      <div className="w-full pb-24 animate-fade-in select-none bg-[#F8FAFC] dark:bg-[#0B0F19]">
+      <div className="w-full pb-24 animate-fade-in select-none bg-[#F7F7F7] dark:bg-[#18181B]">
         
         {/* ── 1. FLIPKART-STYLE CATEGORIES STRIP (Just like the Mobile App) ── */}
         <div id="categories" className="scroll-mt-24" />
-        <section id="categories-section" className="bg-white/95 dark:bg-[#111827]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 py-3 sm:py-4 px-2 sm:px-6 shadow-xs sticky top-16 md:top-20 z-30 transition-all">
+        <section id="categories-section" className="bg-white/95 dark:bg-[#1E1E1E]/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-[#27272A] py-3 sm:py-4 px-2 sm:px-6 shadow-xs sticky top-16 md:top-20 z-30 transition-all">
           <div className="max-w-[1600px] mx-auto">
             <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth px-1">
               
@@ -305,15 +317,15 @@ export default function AppHome() {
               >
                 <div className={`w-13 h-13 sm:w-15 sm:h-15 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                   isAll
-                    ? "bg-gradient-to-br from-[#DC0101] to-[#B91C1C] text-white shadow-lg shadow-red-500/25 scale-105 ring-2 ring-[#DC0101] ring-offset-2 dark:ring-offset-slate-900"
-                    : "bg-slate-100 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 group-hover:bg-red-50 dark:group-hover:bg-red-950/20 group-hover:text-[#DC0101] group-hover:scale-102"
+                    ? "bg-gradient-to-br from-[#FA0303] to-[#970202] text-white shadow-lg shadow-red-500/25 scale-105 ring-2 ring-[#DC0101] ring-offset-2 dark:ring-offset-[#1E1E1E]"
+                    : "bg-zinc-100 dark:bg-[#27272A] border border-zinc-200 dark:border-[#3F3F46] text-zinc-700 dark:text-zinc-300 group-hover:bg-red-50 dark:group-hover:bg-red-950/20 group-hover:text-[#DC0101] group-hover:scale-102"
                 }`}>
                   <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <span className={`text-[11px] sm:text-xs text-center leading-tight transition-colors ${
                   isAll
                     ? "font-extrabold text-[#DC0101] dark:text-[#FA0303]"
-                    : "font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[#DC0101]"
+                    : "font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-[#DC0101]"
                 }`}>
                   All Deals
                 </span>
@@ -332,8 +344,8 @@ export default function AppHome() {
                   >
                     <div className={`w-13 h-13 sm:w-15 sm:h-15 rounded-2xl flex items-center justify-center p-2.5 transition-all duration-300 ${
                       isSelected
-                        ? "bg-gradient-to-br from-[#DC0101] to-[#B91C1C] text-white shadow-lg shadow-red-500/25 scale-105 ring-2 ring-[#DC0101] ring-offset-2 dark:ring-offset-slate-900"
-                        : "bg-slate-100 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 group-hover:bg-red-50 dark:group-hover:bg-red-950/20 group-hover:scale-102 group-hover:shadow-xs"
+                        ? "bg-gradient-to-br from-[#FA0303] to-[#970202] text-white shadow-lg shadow-red-500/25 scale-105 ring-2 ring-[#DC0101] ring-offset-2 dark:ring-offset-[#1E1E1E]"
+                        : "bg-zinc-100 dark:bg-[#27272A] border border-zinc-200 dark:border-[#3F3F46] group-hover:bg-red-50 dark:group-hover:bg-red-950/20 group-hover:scale-102 group-hover:shadow-xs"
                     }`}>
                       {iconPath ? (
                         <img 
@@ -342,13 +354,13 @@ export default function AppHome() {
                           className="w-full h-full object-contain filter drop-shadow-xs" 
                         />
                       ) : (
-                        <Tag className={`w-5 h-5 ${isSelected ? "text-white" : "text-slate-600 dark:text-slate-300"}`} />
+                        <Tag className={`w-5 h-5 ${isSelected ? "text-white" : "text-zinc-600 dark:text-zinc-300"}`} />
                       )}
                     </div>
                     <span className={`text-[10px] sm:text-[11px] text-center leading-tight line-clamp-2 w-full px-0.5 transition-colors ${
                       isSelected
                         ? "font-extrabold text-[#DC0101] dark:text-[#FA0303]"
-                        : "font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[#DC0101]"
+                        : "font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-[#DC0101]"
                     }`}>
                       {cat.name}
                     </span>
@@ -400,8 +412,8 @@ export default function AppHome() {
                     {searchResultsBusinesses.slice(0, 4).map((shop) => (
                       <StoreCard
                         key={shop.id}
-                        shop={shop}
-                        onViewStore={(s) => openShopDetails(s.id)}
+                        business={shop}
+                        onOpenShop={(id) => openShopDetails(id)}
                       />
                     ))}
                   </div>
@@ -462,7 +474,7 @@ export default function AppHome() {
 
           {/* ── 3. Subcategories Filter Row (When specific category selected) ── */}
           {!isAll && subCategoriesList.length > 0 && (
-            <section className="bg-white dark:bg-[#121620] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 shadow-xs">
+            <section className="bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-2xl p-3 shadow-xs">
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
                 {subCategoriesList.map((subName) => {
                   const isSelected = activeSubCategory === subName;
@@ -517,7 +529,7 @@ export default function AppHome() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-[#121620] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-10 text-center space-y-3">
+              <div className="bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-3xl p-10 text-center space-y-3">
                 <p className="text-sm font-bold text-zinc-500">
                   No offers available in this subcategory.
                 </p>
@@ -601,7 +613,7 @@ export default function AppHome() {
             <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
               
               {/* Invite & Earn Card */}
-              <div className="lg:col-span-5 bg-white dark:bg-[#121620] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+              <div className="lg:col-span-5 bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                     <Gift className="w-6 h-6" />
@@ -629,7 +641,7 @@ export default function AppHome() {
               </div>
 
               {/* Top Verified Brands / Categories */}
-              <div className="lg:col-span-7 bg-white dark:bg-[#121620] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="lg:col-span-7 bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="text-base font-black text-zinc-900 dark:text-white">
                     Top Local Categories in Pondicherry
@@ -641,10 +653,10 @@ export default function AppHome() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
-                    { name: "French Cafes", count: "18+ Deals", tag: "Food & Dining" },
+                    { name: "French Cafes", count: "18+ Deals", tag: "Food" },
                     { name: "Heritage Villas", count: "12+ Stays", tag: "Accommodation" },
-                    { name: "Aroma Massages", count: "15+ Packages", tag: "Spa & Beauty" },
-                    { name: "Royal Enfield", count: "9+ Rentals", tag: "Two Wheeler" },
+                    { name: "Aroma Massages", count: "15+ Packages", tag: "Spa Massage Center" },
+                    { name: "Royal Enfield", count: "9+ Rentals", tag: "Two Wheeler Rental" },
                     { name: "Mangrove Cruises", count: "8+ Boats", tag: "Boating Service" },
                     { name: "Craft Breweries", count: "14+ Passes", tag: "Night Life" },
                   ].map((brand) => (
@@ -735,7 +747,7 @@ export default function AppHome() {
 
           {/* ── 10. SECTION 7: TRUST & ASSURANCE STRIP ── */}
           {isAll && (
-            <section className="bg-white dark:bg-[#121620] border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs">
+            <section className="bg-white dark:bg-[#1E1E1E] border border-zinc-200/80 dark:border-[#27272A] rounded-3xl p-6 sm:p-8 shadow-xs">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                 <div className="space-y-1.5">
                   <div className="w-10 h-10 rounded-2xl bg-red-50 dark:bg-red-950/40 text-[#DC0101] flex items-center justify-center mx-auto shadow-2xs">
@@ -806,6 +818,15 @@ export default function AppHome() {
       <SideDrawer />
       <AuthModal />
       <DestinationDetailModal />
+      <LocationModal 
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        selectedLocation={location}
+        isPromptMode={isLocationPrompt}
+        onSelectLocation={(loc, coords) => {
+          setLocation(loc, coords);
+        }}
+      />
 
       {/* Cart Conflict Warning Modal */}
       {cartConflictOffer && (
@@ -821,7 +842,7 @@ export default function AppHome() {
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium">
                 Your cart contains offers from another store. Each purchase generates a single QR code for one business.
               </p>
-              <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-left text-xs space-y-1">
+              <div className="bg-zinc-50 dark:bg-[#18181B] p-3 rounded-2xl border border-zinc-200 dark:border-[#27272A] text-left text-xs space-y-1">
                 <p className="text-[11px] text-zinc-500 font-bold">Offer you are trying to add:</p>
                 <p className="font-black text-zinc-900 dark:text-white">{cartConflictOffer.title}</p>
                 <p className="text-[#DC0101] font-bold text-[11px]">{cartConflictOffer.businessName}</p>

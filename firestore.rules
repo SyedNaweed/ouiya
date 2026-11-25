@@ -63,7 +63,7 @@ service cloud.firestore {
       match /reviews/{reviewId} {
         allow read: if true;
         allow create: if isSignedIn();
-        allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.uid == request.auth.uid || isOwner(userId));
+        allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.uid == request.auth.uid);
       }
     }
 

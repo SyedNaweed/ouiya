@@ -26,10 +26,10 @@ export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
   return (
     <div 
       onClick={() => onViewOffer(offer)}
-      className="group bg-white dark:bg-[#131926] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative cursor-pointer"
+      className="group bg-white dark:bg-[#1E1E1E] border border-zinc-200/80 dark:border-[#27272A] rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1 relative cursor-pointer"
     >
       {/* Product Image Container with Badges */}
-      <div className="relative h-44 sm:h-48 w-full bg-slate-100 dark:bg-slate-900 overflow-hidden flex items-center justify-center">
+      <div className="relative h-44 sm:h-48 w-full bg-zinc-100 dark:bg-[#18181B] overflow-hidden flex items-center justify-center">
         <img
           src={imgSrc}
           alt={offer.title}
@@ -44,7 +44,7 @@ export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
 
         {/* Top-Left Discount Badge */}
         <div className="absolute top-2.5 left-2.5 z-10">
-          <span className="bg-gradient-to-r from-[#DC0101] to-[#E11D48] text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow-sm tracking-tight inline-flex items-center gap-1">
+          <span className="bg-gradient-to-r from-[#FA0303] to-[#970202] text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow-sm tracking-tight inline-flex items-center gap-1">
             <span>{offer.discount || "25% OFF"}</span>
           </span>
         </div>
@@ -58,7 +58,7 @@ export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
           className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all active:scale-90 shadow-sm cursor-pointer ${
             isLiked
               ? "bg-[#DC0101] text-white"
-              : "bg-white/85 dark:bg-black/60 text-slate-700 dark:text-slate-200 hover:text-[#DC0101] hover:bg-white"
+              : "bg-white/85 dark:bg-black/60 text-zinc-700 dark:text-zinc-200 hover:text-[#DC0101] hover:bg-white"
           }`}
           title={isLiked ? "Remove from favourites" : "Save to favourites"}
         >
@@ -91,33 +91,33 @@ export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
 
           {/* Store Name with Verified Icon */}
           <div className="flex items-center gap-1">
-            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+            <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 truncate">
               {offer.businessName}
             </h4>
             <CheckCircle2 className="w-3 h-3 text-sky-500 shrink-0" />
           </div>
 
           {/* Deal Title */}
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-[#DC0101] transition-colors leading-snug mt-0.5">
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-1 group-hover:text-[#DC0101] transition-colors leading-snug mt-0.5">
             {offer.title}
           </h3>
 
           {/* Location / Distance Indicator */}
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-medium">
+          <div className="flex items-center gap-1 text-[11px] text-zinc-400 dark:text-zinc-500 mt-1 font-medium">
             <MapPin className="w-3 h-3 text-[#DC0101] shrink-0" />
             <span className="truncate">{offer.location || "Pondicherry"}</span>
           </div>
         </div>
 
         {/* Pricing Row & Action Buttons */}
-        <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="pt-2.5 border-t border-zinc-100 dark:border-[#27272A] flex items-center justify-between">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <span className="text-base font-extrabold text-zinc-900 dark:text-white tracking-tight">
                 ₹{discountedPrice}
               </span>
               {originalPrice > discountedPrice && (
-                <span className="text-xs text-slate-400 line-through font-medium">
+                <span className="text-xs text-zinc-400 line-through font-medium">
                   ₹{originalPrice}
                 </span>
               )}
@@ -136,7 +136,7 @@ export default function OfferCard({ offer, onViewOffer }: OfferCardProps) {
                 addToCart(offer);
               }}
               disabled={isSoldOut}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#DC0101] hover:text-white text-slate-700 dark:text-slate-200 transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+              className="p-2 rounded-xl bg-zinc-100 dark:bg-[#27272A] hover:bg-[#DC0101] hover:text-white text-zinc-700 dark:text-zinc-200 transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
               title="Add to Cart"
             >
               <ShoppingBag className="w-3.5 h-3.5" />

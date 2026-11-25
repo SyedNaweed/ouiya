@@ -167,7 +167,7 @@ export function searchBusinesses(businesses: Business[], query: string): Busines
     const name = (b.name || "").toLowerCase();
     const cat = (b.category || "").toLowerCase();
     const addr = (b.address || "").toLowerCase();
-    const desc = (b.description || "").toLowerCase();
+    const desc = (b.about || b.description || "").toLowerCase();
 
     // Exact phrase match
     if (name.includes(clean) || cat.includes(clean) || addr.includes(clean)) return true;

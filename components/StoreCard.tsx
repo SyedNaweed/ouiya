@@ -21,7 +21,7 @@ export default function StoreCard({ business, onOpenShop }: StoreCardProps) {
   return (
     <div
       onClick={() => onOpenShop(business.id)}
-      className="group relative rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 h-56 sm:h-64 cursor-pointer border border-slate-200/80 dark:border-slate-800/80 hover:-translate-y-1 flex flex-col justify-end bg-slate-900"
+      className="group relative rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 h-56 sm:h-64 cursor-pointer border border-zinc-200/80 dark:border-[#27272A] hover:-translate-y-1 flex flex-col justify-end bg-[#18181B]"
     >
       {/* Background Image */}
       <img

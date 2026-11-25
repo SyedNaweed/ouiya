@@ -35,8 +35,8 @@ export default function VoucherCard({
       className={`relative rounded-2xl p-4 sm:p-5 text-white shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between min-h-[150px] ${gradient} group`}
     >
       {/* Semi-circular ticket cutouts on left and right */}
-      <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white dark:bg-[#0b0f19] z-10" />
-      <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white dark:bg-[#0b0f19] z-10" />
+      <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#F7F7F7] dark:bg-[#18181B] z-10" />
+      <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#F7F7F7] dark:bg-[#18181B] z-10" />
 
       {/* Decorative dashed dividing line */}
       <div className="absolute left-4 right-4 top-1/2 border-b border-white/20 border-dashed pointer-events-none" />

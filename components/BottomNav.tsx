@@ -25,7 +25,7 @@ export default function BottomNav() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#121620] border-t border-zinc-200/80 dark:border-zinc-800 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden select-none">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#1E1E1E] border-t border-zinc-200/80 dark:border-[#27272A] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden select-none">
       <div className="max-w-lg mx-auto h-16 flex items-center justify-between px-2 sm:px-3">
         {/* 1. HOME */}
         <button
@@ -112,7 +112,7 @@ export default function BottomNav() {
               activeTab === "discover"
                 ? "ring-2 ring-zinc-900 dark:ring-white scale-102"
                 : ""
-            } bg-gradient-to-b from-[#DC0101] to-[#B91C1C] text-white shadow-red-500/25`}
+            } bg-gradient-to-b from-[#FA0303] to-[#970202] text-white shadow-red-500/25`}
           >
             <span className="text-[10px] font-black leading-tight tracking-tight uppercase">
               Discover<br />Pondicherry

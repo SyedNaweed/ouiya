@@ -111,7 +111,7 @@ export default function ShopDetailModal() {
       />
 
       {/* Modal Container */}
-      <div className="relative bg-white dark:bg-zinc-900 w-full h-full md:h-[90vh] md:max-w-2xl md:rounded-3xl shadow-2xl overflow-y-auto no-scrollbar z-10 flex flex-col animate-slide-up">
+      <div className="relative bg-white dark:bg-[#1E1E1E] w-full h-full md:h-[90vh] md:max-w-2xl md:rounded-3xl shadow-2xl overflow-y-auto no-scrollbar z-10 flex flex-col animate-slide-up border border-zinc-200 dark:border-[#27272A]">
         
         {/* 1. Header/Carousel of Images */}
         <div className="relative h-60 md:h-72 w-full bg-zinc-100 dark:bg-zinc-800 shrink-0">
@@ -164,7 +164,7 @@ export default function ShopDetailModal() {
         </div>
 
         {/* 2. Shop Header Bar */}
-        <div className="p-6 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+        <div className="p-6 bg-white dark:bg-[#1E1E1E] border-b border-zinc-200 dark:border-[#27272A] shrink-0">
           <div className="flex justify-between items-start gap-4">
             <div>
               <h2 className="text-2xl font-black text-zinc-900 dark:text-white leading-tight">
@@ -213,7 +213,7 @@ export default function ShopDetailModal() {
         </div>
 
         {/* 4. Tab Content Area */}
-        <div className="p-6 flex-1 bg-zinc-50 dark:bg-zinc-950">
+        <div className="p-6 flex-1 bg-[#F7F7F7] dark:bg-[#18181B]">
           
           {/* TAB 1: OFFERS */}
           {activeTab === "offers" && (
@@ -231,7 +231,7 @@ export default function ShopDetailModal() {
                     <div 
                       key={offer.id} 
                       onClick={() => openOfferDetails(offer)}
-                      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer group"
+                      className="bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer group"
                     >
                       <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-zinc-100 border border-zinc-100 relative">
                         <img src={offer.businessLogo} alt={offer.title} className="w-full h-full object-cover" />

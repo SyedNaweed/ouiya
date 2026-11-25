@@ -63,9 +63,9 @@ export default function CartModal() {
   }
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden animate-fade-in select-none flex flex-col h-full">
-      {/* 1. Header (Red) */}
-      <div className="bg-red-600 px-6 py-4.5 flex justify-between items-center text-white shrink-0 shadow-md">
+    <div className="w-full max-w-xl mx-auto bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-3xl shadow-2xl overflow-hidden animate-fade-in select-none flex flex-col h-full">
+      {/* 1. Header (Brand Gradient) */}
+      <div className="bg-gradient-to-r from-[#FA0303] via-[#DC0101] to-[#970202] px-6 py-4.5 flex justify-between items-center text-white shrink-0 shadow-md">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setTab("home")} 
@@ -97,11 +97,11 @@ export default function CartModal() {
       )}
 
       {/* 3. Cart Items List */}
-      <div className="p-6 flex-grow space-y-4 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar bg-zinc-50 dark:bg-zinc-950">
+      <div className="p-6 flex-grow space-y-4 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar bg-[#F7F7F7] dark:bg-[#18181B]">
         {cart.map((item) => (
           <div 
             key={item.offer.id} 
-            className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex gap-4 items-center justify-between"
+            className="bg-white dark:bg-[#1E1E1E] border border-zinc-200 dark:border-[#27272A] rounded-2xl p-4 shadow-sm flex gap-4 items-center justify-between"
           >
             <img
               src={item.offer.businessLogo || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=150&auto=format&fit=crop&q=60"}
@@ -158,7 +158,7 @@ export default function CartModal() {
       </div>
 
       {/* 4. Payment Method & Price Details (Wireframe Image 5) */}
-      <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0 space-y-6">
+      <div className="p-6 border-t border-zinc-200 dark:border-[#27272A] bg-white dark:bg-[#1E1E1E] shrink-0 space-y-6">
         
         {/* Price Details Card */}
         <div className="space-y-2 text-xs">

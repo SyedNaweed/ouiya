@@ -55,6 +55,8 @@ export interface Business {
   phone: string;
   gallery: string[];
   about: string;
+  category?: string;
+  description?: string;
   hasVoucher?: boolean;
   vouchers?: {
     id: string;
@@ -159,6 +161,46 @@ export const OFFICIAL_CATEGORIES: Category[] = [
 ];
 
 export const MOCK_CATEGORIES: Category[] = OFFICIAL_CATEGORIES;
+
+// Canonical Category Normalizer matching all 11 Mobile App Categories
+export function normalizeCategory(categoryName?: string): string {
+  if (!categoryName) return "";
+  const lower = categoryName.toLowerCase().trim().replace(/[\s_&/,\-]+/g, "");
+  if (lower.includes("accommodat") || lower.includes("hotel") || lower.includes("resort") || lower.includes("villa") || lower.includes("stay")) {
+    return "Accommodation";
+  }
+  if (lower.includes("food") || lower.includes("dine") || lower.includes("dining") || lower.includes("restaurant") || lower.includes("cafe") || lower.includes("snack") || lower.includes("pizza") || lower.includes("burger")) {
+    return "Food";
+  }
+  if (lower.includes("twowheeler") || lower.includes("bike") || lower.includes("scooter") || lower.includes("rental")) {
+    return "Two Wheeler Rental";
+  }
+  if (lower.includes("carwash") || lower.includes("bikewash") || lower.includes("wash") || lower.includes("detail")) {
+    return "Car Wash";
+  }
+  if (lower.includes("mobilerepair") || lower.includes("mobile") || lower.includes("phone") || lower.includes("repair")) {
+    return "Mobile Repair";
+  }
+  if (lower.includes("realestate") || lower.includes("property") || lower.includes("estate")) {
+    return "Real Estate";
+  }
+  if (lower.includes("beauty") || lower.includes("parlour") || lower.includes("salon") || lower.includes("saloon") || lower.includes("hair")) {
+    return "Beauty Parlour & Saloon";
+  }
+  if (lower.includes("spa") || lower.includes("massage") || lower.includes("wellness")) {
+    return "Spa Massage Center";
+  }
+  if (lower.includes("night") || lower.includes("pub") || lower.includes("bar") || lower.includes("club") || lower.includes("loung")) {
+    return "Night Life";
+  }
+  if (lower.includes("entertainment") || lower.includes("game") || lower.includes("movie") || lower.includes("play") || lower.includes("bowl")) {
+    return "Entertainment";
+  }
+  if (lower.includes("boat") || lower.includes("cruise") || lower.includes("kayak")) {
+    return "Boating Service";
+  }
+  return categoryName;
+}
 
 export const MOCK_BUSINESSES: Business[] = [
   {
@@ -885,6 +927,372 @@ export const INITIAL_MOCK_OFFERS: Offer[] = [
     ouiyaPrice: 2250,
     aboutOffer: "Budget-friendly cozy homestay in White Town.",
     shopId: "biz-semastay"
+  },
+  // ── Two Wheeler Rental ──
+  {
+    id: "off-twr-1",
+    title: "Honda Activa 6G Daily City Rental",
+    subTitle: "On two wheeler rental",
+    description: "Well-maintained automatic scooter with complimentary helmet, full tank fuel option, and 24/7 roadside assistance across Pondicherry.",
+    businessName: "Pondy Bike Rentals",
+    businessLogo: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=400&auto=format&fit=crop&q=80",
+    discount: "33% OFF",
+    rating: 4.8,
+    reviewsCount: "320",
+    code: "ACTIVA299",
+    category: "Two Wheeler Rental",
+    subcategory: "Scooters",
+    location: "MG Road, Heritage Town, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 450,
+    ouiyaPrice: 299,
+    aboutOffer: "Unlimited kilometers across Pondy city limits. Valid driving license required.",
+    shopId: "biz-pondybikes"
+  },
+  {
+    id: "off-twr-2",
+    title: "Royal Enfield Classic 350 Weekend Pass",
+    subTitle: "On two wheeler rental",
+    description: "Experience the scenic East Coast Road on a polished Royal Enfield Classic 350 with twin helmets and safety gear included.",
+    businessName: "Pondy Riders Club",
+    businessLogo: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&auto=format&fit=crop&q=80",
+    discount: "33% OFF",
+    rating: 4.9,
+    reviewsCount: "215",
+    code: "ENFIELD799",
+    category: "Two Wheeler Rental",
+    subcategory: "Bikes",
+    location: "Mission Street, White Town, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 1200,
+    ouiyaPrice: 799,
+    aboutOffer: "Cruiser bike rental with zero security deposit on verified ID.",
+    shopId: "biz-pondyriders"
+  },
+  {
+    id: "off-twr-3",
+    title: "Ather 450X Smart EV Scooter Daily Pass",
+    subTitle: "On two wheeler rental",
+    description: "Eco-friendly zero-emission electric scooter with 100km range on single charge and free access to city charging grid.",
+    businessName: "Green Pondy EV Rentals",
+    businessLogo: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=400&auto=format&fit=crop&q=80",
+    discount: "38% OFF",
+    rating: 4.7,
+    reviewsCount: "140",
+    code: "ATHEREV399",
+    category: "Two Wheeler Rental",
+    subcategory: "Electric Scooters",
+    location: "Goubert Avenue, Beach Road, Puducherry",
+    isTopOffer: false,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 650,
+    ouiyaPrice: 399,
+    aboutOffer: "High-speed electric scooter ideal for French Quarter sightseeing.",
+    shopId: "biz-greenpondy"
+  },
+  // ── Car Wash ──
+  {
+    id: "off-cw-1",
+    title: "Express Car & Bike Spa Foam Wash",
+    subTitle: "On car wash",
+    description: "High-pressure snow foam exterior wash, underbody rinse, tire gloss, dashboard polishing, and vacuuming.",
+    businessName: "Express Auto Spa Pondy",
+    businessLogo: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&auto=format&fit=crop&q=80",
+    discount: "42% OFF",
+    rating: 4.8,
+    reviewsCount: "190",
+    code: "FOAMWASH349",
+    category: "Car Wash",
+    subcategory: "Car Wash",
+    location: "100 Feet Road, Ellaipillaichavady, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 600,
+    ouiyaPrice: 349,
+    aboutOffer: "Quick 25-minute express wash with imported biodegradable shampoos.",
+    shopId: "biz-expressautospa"
+  },
+  {
+    id: "off-cw-2",
+    title: "3M Deep Interior Detailing & Germ Clean",
+    subTitle: "On car wash",
+    description: "Complete interior shampooing, steam sterilization of AC vents, roof upholstery scrub, and leather conditioning.",
+    businessName: "3M Car Care Pondicherry",
+    businessLogo: "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=400&auto=format&fit=crop&q=80",
+    discount: "35% OFF",
+    rating: 4.9,
+    reviewsCount: "280",
+    code: "3MDETAIL1299",
+    category: "Car Wash",
+    subcategory: "Detailing",
+    location: "Villupuram Main Road, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 2000,
+    ouiyaPrice: 1299,
+    aboutOffer: "Professional 3M certified interior protection and sanitization.",
+    shopId: "biz-3mcarcare"
+  },
+  {
+    id: "off-cw-3",
+    title: "Superbike Foam Wash & Chain Lube Therapy",
+    subTitle: "On car wash",
+    description: "Detailed motorcycle wash, degreasing of sprockets, Motul high-speed chain lube, and mirror glaze polish.",
+    businessName: "Moto Spa Pondicherry",
+    businessLogo: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=400&auto=format&fit=crop&q=80",
+    discount: "45% OFF",
+    rating: 4.7,
+    reviewsCount: "110",
+    code: "BIKESPA249",
+    category: "Car Wash",
+    subcategory: "Bike Wash",
+    location: "Anna Salai, Puducherry",
+    isTopOffer: false,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 450,
+    ouiyaPrice: 249,
+    aboutOffer: "Specialized gentle pressure wash for all gear bikes & superbikes.",
+    shopId: "biz-motospa"
+  },
+  // ── Mobile Repair ──
+  {
+    id: "off-mr-1",
+    title: "Same-Day Screen Replacement (iPhone & Android)",
+    subTitle: "On mobile repair",
+    description: "OLED and LCD glass replacement with 6 months warranty, free screen protector application, and dust clean.",
+    businessName: "iCare Pondicherry",
+    businessLogo: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&auto=format&fit=crop&q=80",
+    discount: "33% OFF",
+    rating: 4.8,
+    reviewsCount: "340",
+    code: "SCREEN1199",
+    category: "Mobile Repair",
+    subcategory: "Screen Replacement",
+    location: "Bussy Street, Heritage Town, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 1800,
+    ouiyaPrice: 1199,
+    aboutOffer: "High-grade OEM quality display panels fitted within 45 minutes.",
+    shopId: "biz-icarepondy"
+  },
+  {
+    id: "off-mr-2",
+    title: "Original Battery Replacement + Free Diagnostics",
+    subTitle: "On mobile repair",
+    description: "Restore 100% battery health with genuine high-capacity batteries and complimentary thermal paste overhaul.",
+    businessName: "Quick Mobile Solutions",
+    businessLogo: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400&auto=format&fit=crop&q=80",
+    discount: "40% OFF",
+    rating: 4.7,
+    reviewsCount: "175",
+    code: "BATTERY599",
+    category: "Mobile Repair",
+    subcategory: "Battery Replacement",
+    location: "Jawaharlal Nehru Street, Puducherry",
+    isTopOffer: false,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 1000,
+    ouiyaPrice: 599,
+    aboutOffer: "Backed by 180 days unconditional replacement warranty.",
+    shopId: "biz-quickmobiles"
+  },
+  // ── Real Estate ──
+  {
+    id: "off-re-1",
+    title: "French Quarter Heritage Villa Long-Term Lease",
+    subTitle: "On real estate",
+    description: "Colonial arched doorways, private inner courtyard garden, 3 spacious bedrooms, fully furnished heritage villa in White Town.",
+    businessName: "Heritage Town Properties",
+    businessLogo: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&auto=format&fit=crop&q=80",
+    discount: "18% OFF",
+    rating: 4.9,
+    reviewsCount: "85",
+    code: "VILLA45K",
+    category: "Real Estate",
+    subcategory: "Villas",
+    location: "Romain Rolland Street, White Town, Puducherry",
+    isTopOffer: true,
+    isCoupon: false,
+    expiryDate: "2026-12-31",
+    originalPrice: 55000,
+    ouiyaPrice: 45000,
+    aboutOffer: "Verified landlord listing with zero brokerage for 1-year commitments.",
+    shopId: "biz-heritagerealty"
+  },
+  {
+    id: "off-re-2",
+    title: "Auroville Coastal Road Residential Plot (2400 sq.ft)",
+    subTitle: "On real estate",
+    description: "Clear DTCP approved gated community residential land with coconut trees, electricity, and 40-foot blacktop road access.",
+    businessName: "Auro Prime Properties",
+    businessLogo: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&auto=format&fit=crop&q=80",
+    discount: "12% OFF",
+    rating: 4.8,
+    reviewsCount: "60",
+    code: "AUROPLOT24",
+    category: "Real Estate",
+    subcategory: "Plots",
+    location: "ECR, Near Auroville Toll, Puducherry",
+    isTopOffer: false,
+    isCoupon: false,
+    expiryDate: "2026-12-31",
+    originalPrice: 2800000,
+    ouiyaPrice: 2450000,
+    aboutOffer: "Free legal scrutiny report and subsidized stamp duty registration.",
+    shopId: "biz-auroprime"
+  },
+  // ── Boating Service ──
+  {
+    id: "off-bs-1",
+    title: "Chunnambar Speed Boat Thrill Pass to Paradise Beach",
+    subTitle: "On boating service",
+    description: "Adrenaline-pumping 8-seater speedboat round-trip across Chunnambar river backwaters to the secluded Paradise Beach sands.",
+    businessName: "Chunnambar Boat House",
+    businessLogo: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&auto=format&fit=crop&q=80",
+    discount: "30% OFF",
+    rating: 4.8,
+    reviewsCount: "520",
+    code: "BOAT450",
+    category: "Boating Service",
+    subcategory: "Speed Boat",
+    location: "Nonankuppam, Chunnambar, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 650,
+    ouiyaPrice: 450,
+    aboutOffer: "Certified lifejackets and professional skipper included.",
+    shopId: "biz-chunnambar"
+  },
+  {
+    id: "off-bs-2",
+    title: "Serene Backwater Kayaking & Mangrove Forest Tour",
+    subTitle: "On boating service",
+    description: "Guided 2-hour single/tandem kayak excursion through lush mangrove tunnels with birdwatching and light refreshments.",
+    businessName: "Pondy Kayak Club",
+    businessLogo: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=400&auto=format&fit=crop&q=80",
+    discount: "33% OFF",
+    rating: 4.9,
+    reviewsCount: "195",
+    code: "KAYAK599",
+    category: "Boating Service",
+    subcategory: "Kayaking",
+    location: "Arikamedu Backwaters, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 900,
+    ouiyaPrice: 599,
+    aboutOffer: "Suitable for beginners. Morning and sunset batches available.",
+    shopId: "biz-pondykayak"
+  },
+  // ── Night Life ──
+  {
+    id: "off-nl-1",
+    title: "Happy Hours Unlimited Craft Beer & Finger Food Pass",
+    subTitle: "On night life",
+    description: "Chilled craft beers, signature house cocktails, and chef-curated starters at Pondicherry's trendiest pub lounge.",
+    businessName: "Asian House Restro-Bar",
+    businessLogo: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80",
+    discount: "35% OFF",
+    rating: 4.8,
+    reviewsCount: "430",
+    code: "CRAFT899",
+    category: "Night Life",
+    subcategory: "Pubs",
+    location: "7, Maraimalai Adigal Salai, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 1400,
+    ouiyaPrice: 899,
+    aboutOffer: "Valid from 5:00 PM to 9:30 PM. Stags and couples welcome.",
+    shopId: "biz-asianhouse"
+  },
+  {
+    id: "off-nl-2",
+    title: "Weekend Rooftop DJ Party & Cocktail Pass",
+    subTitle: "On night life",
+    description: "Entry to top-tier electronic DJ night with two complimentary cocktails and rooftop open-air sea breeze.",
+    businessName: "Toxic Pub Pondy",
+    businessLogo: "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=400&auto=format&fit=crop&q=80",
+    discount: "36% OFF",
+    rating: 4.7,
+    reviewsCount: "290",
+    code: "DJNIGHT699",
+    category: "Night Life",
+    subcategory: "Clubs",
+    location: "Subbaraya Pillai Street, Puducherry",
+    isTopOffer: false,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 1100,
+    ouiyaPrice: 699,
+    aboutOffer: "Free entry for couples before 8:00 PM.",
+    shopId: "biz-toxicpub"
+  },
+  // ── Spa Massage Center ──
+  {
+    id: "off-sm-1",
+    title: "Ayurvedic Abhyanga Full Body Herbal Massage",
+    subTitle: "On spa massage center",
+    description: "Traditional warm medicated herbal oil full-body therapy followed by steam chamber bath and scalp rejuvenation.",
+    businessName: "Aura Luxury Spa Pondy",
+    businessLogo: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&auto=format&fit=crop&q=80",
+    discount: "40% OFF",
+    rating: 4.9,
+    reviewsCount: "310",
+    code: "ABHYANGA1299",
+    category: "Spa Massage Center",
+    subcategory: "Ayurvedic Massage",
+    location: "Needarajappaiyar Street, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 2200,
+    ouiyaPrice: 1299,
+    aboutOffer: "Performed by certified Ayurvedic therapists with authentic Kerala oils.",
+    shopId: "biz-auraspa"
+  },
+  {
+    id: "off-sm-2",
+    title: "Swedish Stress Relief Therapy & Lavender Steam",
+    subTitle: "On spa massage center",
+    description: "Gentle rhythmic pressure to release muscular tension, improve circulation, and soothe stress in private tranquil suites.",
+    businessName: "Nirvana Wellness Retreat",
+    businessLogo: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=400&auto=format&fit=crop&q=80",
+    discount: "40% OFF",
+    rating: 4.8,
+    reviewsCount: "220",
+    code: "SWEDISH1499",
+    category: "Spa Massage Center",
+    subcategory: "Full Body Massage",
+    location: "White Town, Puducherry",
+    isTopOffer: true,
+    isCoupon: true,
+    isNewArrival: true,
+    expiryDate: "2026-12-31",
+    originalPrice: 2500,
+    ouiyaPrice: 1499,
+    aboutOffer: "60-minute therapy with private shower and complimentary green tea.",
+    shopId: "biz-nirvana"
   }
 ];
 
@@ -1029,10 +1437,17 @@ export function mapFirestoreBusiness(docId: string, data: any): Business {
       "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80"
     ],
     about: data.businessDescription || data.about || "Quality local business offering top deals.",
+    category: data.category || "",
+    description: data.businessDescription || data.description || data.about || "",
     hasVoucher: Boolean(data.hasVoucher),
     comments: Array.isArray(data.comments) ? data.comments : []
   };
 }
+
+// In-memory caching layer for lightning-fast (0ms) category switching
+let cachedBaseOffers: Offer[] | null = null;
+let lastOffersFetchTimestamp = 0;
+const OFFERS_CACHE_EXPIRY = 30000; // 30s cache
 
 // Main Data Fetching Interface - Queries Firestore & merges seamlessly with existing UI data
 export const getOffers = async (filters?: {
@@ -1040,50 +1455,68 @@ export const getOffers = async (filters?: {
   query?: string;
   location?: string;
 }): Promise<Offer[]> => {
-  let firestoreOffers: Offer[] = [];
+  const now = Date.now();
+  let baseOffers: Offer[];
 
-  // Query Cloud Firestore `offers` collection according to schema
-  try {
-    const querySnapshot = await getDocs(collection(db, "offers"));
-    querySnapshot.forEach((doc: any) => {
-      const data = doc.data();
-      firestoreOffers.push(mapFirestoreOffer(doc.id, data));
+  // If in-memory cache is valid, return filtered deals instantly (0ms response)
+  if (cachedBaseOffers && cachedBaseOffers.length > 0 && now - lastOffersFetchTimestamp < OFFERS_CACHE_EXPIRY) {
+    baseOffers = cachedBaseOffers;
+  } else {
+    let firestoreOffers: Offer[] = [];
+
+    // Query Cloud Firestore `offers` collection according to schema
+    try {
+      const querySnapshot = await getDocs(collection(db, "offers"));
+      querySnapshot.forEach((doc: any) => {
+        const data = doc.data();
+        firestoreOffers.push(mapFirestoreOffer(doc.id, data));
+      });
+    } catch {
+      // Silent catch if Firebase rules deny unauthenticated read access
+    }
+
+    const localAds = getLocalAds();
+
+    // Combine Firestore offers with all curated mock offers (avoiding duplicates by id) and local ads
+    const existingOfferIds = new Set(firestoreOffers.map(o => o.id));
+    const supplementalMockOffers = INITIAL_MOCK_OFFERS.filter(m => !existingOfferIds.has(m.id));
+    baseOffers = [...firestoreOffers, ...supplementalMockOffers, ...localAds];
+
+    // Map and apply fallbacks for missing/empty fields
+    baseOffers = baseOffers.map(o => {
+      const normalizedCat = normalizeCategory(o.category) || o.category || "Food";
+      const defaultLogo = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&auto=format&fit=crop&q=80";
+
+      return {
+        ...o,
+        category: normalizedCat,
+        businessLogo: o.businessLogo || defaultLogo,
+        rating: o.rating || 4.5,
+        reviewsCount: o.reviewsCount || "150 reviews",
+        ouiyaPrice: o.ouiyaPrice || 499,
+        originalPrice: o.originalPrice || 999,
+        discount: o.discount || "50% OFF",
+        shopId: o.shopId || `biz-${(o.businessName || "shop").toLowerCase().replace(/\s+/g, "")}`
+      };
     });
-  } catch {
-    // Silent catch if Firebase rules deny unauthenticated read access
+
+    cachedBaseOffers = baseOffers;
+    lastOffersFetchTimestamp = now;
   }
 
-  const localAds = getLocalAds();
-
-  // Combine live Firestore offers with user-created local ads
-  let allOffers: Offer[] = [...firestoreOffers, ...localAds];
-
-  // Map and apply fallbacks for missing/empty fields
-  allOffers = allOffers.map(o => {
-    const categoryKey = o.category || "Food";
-    const defaultLogo = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&auto=format&fit=crop&q=80";
-
-    return {
-      ...o,
-      businessLogo: o.businessLogo || defaultLogo,
-      rating: o.rating || 4.5,
-      reviewsCount: o.reviewsCount || "150 reviews",
-      ouiyaPrice: o.ouiyaPrice || 499,
-      originalPrice: o.originalPrice || 999,
-      discount: o.discount || "50% OFF",
-      shopId: o.shopId || `biz-${(o.businessName || "shop").toLowerCase().replace(/\s+/g, "")}`
-    };
-  });
+  let allOffers = [...baseOffers];
 
   // Apply filters
   if (filters) {
     const { category, query: searchQuery, location } = filters;
     
-    if (category && category !== "All" && category !== "More" && category !== "For You") {
-      const catNorm = category.toLowerCase().replace(/[\s_]+/g, "");
+    const isAll = !category || ["all", "all deals", "all categories", "more", "for you"].includes(category.toLowerCase().trim());
+    if (!isAll) {
+      const catTargetNorm = normalizeCategory(category).toLowerCase().replace(/[^a-z0-9]/g, "");
       allOffers = allOffers.filter((o) => {
-        const oNorm = (o.category || "").toLowerCase().replace(/[\s_]+/g, "");
-        return oNorm === catNorm || oNorm.includes(catNorm) || catNorm.includes(oNorm);
+        const oCatNorm = normalizeCategory(o.category).toLowerCase().replace(/[^a-z0-9]/g, "");
+        const oRawNorm = (o.category || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        return oCatNorm === catTargetNorm || oRawNorm === catTargetNorm || oCatNorm.includes(catTargetNorm) || catTargetNorm.includes(oCatNorm);
       });
     }
     
@@ -1353,55 +1786,51 @@ export interface Brand {
 }
 
 export const getCategoriesFromFirebase = async (): Promise<Category[]> => {
-  let categories: Category[] = [];
+  // Initialize with all 11 official categories in mobile sequence
+  const mergedCategories: Category[] = OFFICIAL_CATEGORIES.map(c => ({ ...c }));
+  const customCategories: Category[] = [];
+
   try {
     const querySnapshot = await getDocs(collection(db, "categories"));
     querySnapshot.forEach((doc: any) => {
       const data = doc.data();
-      const catTitle = data.title || data.name || "Category";
+      const catTitle = (data.title || data.name || "").trim();
+      if (!catTitle) return;
       const catId = doc.id;
 
-      // Match with official category in app sequence
-      const official = OFFICIAL_CATEGORIES.find(
-        (m) => m.id.toLowerCase() === catId.toLowerCase() || m.name.toLowerCase().trim() === catTitle.toLowerCase().trim()
+      // Match with official category
+      const officialIdx = mergedCategories.findIndex(
+        (m) => m.id.toLowerCase() === catId.toLowerCase() || m.name.toLowerCase().trim() === catTitle.toLowerCase()
       );
 
       const subcats = Array.isArray(data.subcategories) && data.subcategories.length > 0
         ? data.subcategories
-        : (official ? official.subcategories : []);
+        : (officialIdx >= 0 ? mergedCategories[officialIdx].subcategories : []);
 
-      categories.push({
+      const catObj: Category = {
         id: doc.id,
-        name: catTitle,
-        iconName: data.icon || (official ? official.iconName : "/assets/category_icons/cat_accommodation.png"),
+        name: officialIdx >= 0 ? mergedCategories[officialIdx].name : catTitle,
+        iconName: data.icon || (officialIdx >= 0 ? mergedCategories[officialIdx].iconName : "/assets/category_icons/cat_accommodation.png"),
         offersCount: data.offersCount || 0,
         subcategories: subcats
-      });
+      };
+
+      if (officialIdx >= 0) {
+        mergedCategories[officialIdx] = {
+          ...mergedCategories[officialIdx],
+          ...catObj,
+          subcategories: subcats && subcats.length > 0 ? subcats : mergedCategories[officialIdx].subcategories
+        };
+      } else {
+        customCategories.push(catObj);
+      }
     });
   } catch {
     // Graceful fallback to official categories when offline or unauthenticated
   }
 
-  // If no categories in Firestore, use official categories
-  if (categories.length === 0) {
-    return OFFICIAL_CATEGORIES;
-  }
-
-  // Sort categories in the exact sequence as the mobile app (kDefaultMockCategories)
-  categories.sort((a, b) => {
-    const aIndex = OFFICIAL_CATEGORIES.findIndex(
-      (m) => m.id.toLowerCase() === a.id.toLowerCase() || m.name.toLowerCase().trim() === a.name.toLowerCase().trim()
-    );
-    const bIndex = OFFICIAL_CATEGORIES.findIndex(
-      (m) => m.id.toLowerCase() === b.id.toLowerCase() || m.name.toLowerCase().trim() === b.name.toLowerCase().trim()
-    );
-    if (aIndex >= 0 && bIndex >= 0) return aIndex - bIndex;
-    if (aIndex >= 0) return -1;
-    if (bIndex >= 0) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
-  return categories;
+  // All 11 official categories are guaranteed to be present first, followed by any admin-created custom categories
+  return [...mergedCategories, ...customCategories];
 };
 
 export const getBannersFromFirebase = async (): Promise<AppBanner[]> => {
@@ -1456,10 +1885,86 @@ export const getPromoBannersFromFirebase = async (): Promise<PromoBanner[]> => {
   return banners;
 };
 
+// In-memory cache for Category Banners
+const categoryBannersCache: Record<string, { timestamp: number; banners: AppBanner[] }> = {};
+const BANNERS_CACHE_EXPIRY = 30000;
+
+export const DEFAULT_CATEGORY_BANNERS: Record<string, { title: string; subtitle: string; imageUrl: string }> = {
+  "all": {
+    title: "Discover All Verified Pondicherry Deals",
+    subtitle: "Exclusive savings across stays, dining, rentals, activities & wellness",
+    imageUrl: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80"
+  },
+  "accommodation": {
+    title: "Luxury Stays & Heritage Resorts",
+    subtitle: "Beachfront villas, French quarter boutiques & seaside hotels",
+    imageUrl: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80"
+  },
+  "food": {
+    title: "Pondicherry Foodie Special",
+    subtitle: "French cafes, authentic wood-fired pizzas & fresh seafood",
+    imageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80"
+  },
+  "two_wheeler_rental": {
+    title: "Explore Pondy on Wheels",
+    subtitle: "Scooters, Royal Enfields & electric bikes at daily discounts",
+    imageUrl: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80"
+  },
+  "car_wash": {
+    title: "Express Car & Bike Spa",
+    subtitle: "Doorstep & workshop detailing deals across Pondicherry",
+    imageUrl: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=1200&q=80"
+  },
+  "mobile_repair": {
+    title: "Expert Tech & Phone Fixes",
+    subtitle: "Same-day screen replacements, battery repairs & accessories",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
+  },
+  "real_estate": {
+    title: "Prime Properties & Beachfront Lands",
+    subtitle: "Top residential plots, commercial spaces & heritage villas",
+    imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80"
+  },
+  "beauty_parlour_saloon": {
+    title: "Glow Up & Styling",
+    subtitle: "Bridal makeup, hair styling, facials & grooming packages",
+    imageUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80"
+  },
+  "spa_massage_center": {
+    title: "Ultimate Relaxation & Wellness",
+    subtitle: "Ayurvedic therapy, Swedish massage & luxury couple spas",
+    imageUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80"
+  },
+  "night_life": {
+    title: "Vibrant Pondicherry Evenings",
+    subtitle: "Restro-bars, craft beer lounges & weekend beach parties",
+    imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80"
+  },
+  "entertainment": {
+    title: "Fun, Gaming & Activities",
+    subtitle: "Bowling alleys, VR gaming zones, theme parks & cinema",
+    imageUrl: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80"
+  },
+  "boating_service": {
+    title: "Chunnambar & Mangrove Cruises",
+    subtitle: "Speed boats, sunset rides & serene backwater kayaking",
+    imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80"
+  }
+};
+
 export const getCategoryBannersFromFirebase = async (
   categoryId?: string,
   categoryName?: string
 ): Promise<AppBanner[]> => {
+  const normCat = normalizeCategory(categoryId || categoryName || "").toLowerCase().replace(/[\s_]+/g, "_");
+  const cacheKey = normCat || "all";
+  const now = Date.now();
+
+  // Return cached category banners instantly (0ms)
+  if (categoryBannersCache[cacheKey] && now - categoryBannersCache[cacheKey].timestamp < BANNERS_CACHE_EXPIRY) {
+    return categoryBannersCache[cacheKey].banners;
+  }
+
   let banners: AppBanner[] = [];
   const catKey = (categoryId || categoryName || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
 
@@ -1531,6 +2036,28 @@ export const getCategoryBannersFromFirebase = async (
   } catch {
     // Return live fetched banners from Firebase
   }
+
+  // Fallback to high-quality default banner for this category if none found in Firestore
+  if (banners.length === 0) {
+    const defaultMeta = DEFAULT_CATEGORY_BANNERS[normCat] || DEFAULT_CATEGORY_BANNERS["all"] || DEFAULT_CATEGORY_BANNERS["accommodation"];
+    banners.push({
+      id: `default_banner_${cacheKey}`,
+      imageUrl: defaultMeta.imageUrl,
+      title: defaultMeta.title,
+      subtitle: defaultMeta.subtitle,
+      targetOfferId: "",
+      targetShopId: "",
+      isActive: true,
+      targetScreen: "category",
+      categoryId: normCat,
+      categoryName: normCat
+    });
+  }
+
+  categoryBannersCache[cacheKey] = {
+    timestamp: now,
+    banners
+  };
 
   return banners;
 };
@@ -1661,6 +2188,20 @@ export function matchesSubCategory(
 ): boolean {
   if (!selectedSubCategory || selectedSubCategory.toLowerCase() === "all") return true;
 
+  const subLower = selectedSubCategory.toLowerCase().trim();
+
+  // 1. Algorithmic Filter Modes matching Mobile App
+  if (subLower === "top rated" || subLower === "toprated") {
+    return (offer.rating !== undefined && offer.rating >= 4.5) || Boolean(offer.isTopOffer);
+  }
+  if (subLower === "new arrivals" || subLower === "newarrivals") {
+    return Boolean(offer.isNewArrival) || offer.id.includes("new") || (offer.rating !== undefined && offer.rating >= 4.7);
+  }
+  if (subLower === "best discount" || subLower === "bestdiscount") {
+    const discNum = parseInt((offer.discount || "").replace(/\D/g, ""), 10) || 0;
+    return discNum >= 25 || (offer.discount || "").toLowerCase().includes("off");
+  }
+
   const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   const subIdClean = clean(selectedSubCategory);
@@ -1679,14 +2220,12 @@ export function matchesSubCategory(
   const oSubLower = oSub.toLowerCase();
   const oSubClean = clean(oSub);
 
-  // 1. PRIMARY: Match offer.subcategory
+  // 2. PRIMARY: Match offer.subcategory
   if (oSubClean) {
-    // Exact or normalized match
     if (oSubLower === subIdLower || oSubClean === subIdClean) {
       return true;
     }
 
-    // Substring containment
     if (
       oSubLower.includes(subIdLower) ||
       subIdLower.includes(oSubLower) ||
@@ -1696,7 +2235,6 @@ export function matchesSubCategory(
       return true;
     }
 
-    // Keyword match on offer.subcategory
     for (const kw of keywords) {
       if (oSubLower.includes(kw) || kw.includes(oSubLower)) {
         return true;
@@ -1704,20 +2242,22 @@ export function matchesSubCategory(
     }
   }
 
-  // 2. SECONDARY: Match offer.title or offer.description
+  // 3. SECONDARY: Match offer.title or offer.description or offer.category
   const titleLower = (offer.title || "").toLowerCase();
   const descLower = (offer.description || "").toLowerCase();
+  const subTitleLower = (offer.subTitle || "").toLowerCase();
   const titleClean = clean(offer.title || "");
 
   if (
     (subIdClean && titleClean.includes(subIdClean)) ||
-    (subIdLower && titleLower.includes(subIdLower))
+    (subIdLower && titleLower.includes(subIdLower)) ||
+    (subIdLower && subTitleLower.includes(subIdLower))
   ) {
     return true;
   }
 
   for (const kw of keywords) {
-    if (titleLower.includes(kw) || descLower.includes(kw)) {
+    if (titleLower.includes(kw) || descLower.includes(kw) || subTitleLower.includes(kw)) {
       return true;
     }
   }

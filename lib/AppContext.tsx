@@ -31,7 +31,9 @@ interface AppContextProps {
   themeMode: "light" | "dark" | "system";
   theme: "light" | "dark";
   location: string;
+  userCoords: { lat: number; lng: number } | null;
   isLocationModalOpen: boolean;
+  isLocationPrompt: boolean;
   cartConflictOffer: Offer | null;
   
   // Auth state & actions
@@ -55,8 +57,8 @@ interface AppContextProps {
   setTab: (tab: "home" | "categories" | "cart" | "discover") => void;
   setSelectedCategory: (category: string) => void;
   setSearchQuery: (query: string) => void;
-  setLocation: (loc: string) => void;
-  openLocationModal: () => void;
+  setLocation: (loc: string, coords?: { lat: number; lng: number }) => void;
+  openLocationModal: (asPrompt?: boolean | unknown) => void;
   closeLocationModal: () => void;
   openShopDetails: (shopId: string, clickedOffer?: Offer) => void;
   closeShopDetails: () => void;
@@ -91,12 +93,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [couponExpiry, setCouponExpiry] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [location, setLocation] = useState<string>("White Town, Pondicherry");
+  const [location, setLocationState] = useState<string>("White Town, Pondicherry");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState<boolean>(false);
+  const [isLocationPrompt, setIsLocationPrompt] = useState<boolean>(false);
   const [cartConflictOffer, setCartConflictOffer] = useState<Offer | null>(null);
 
-  const openLocationModal = () => setIsLocationModalOpen(true);
-  const closeLocationModal = () => setIsLocationModalOpen(false);
+  // Restore saved location & coordinates from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLoc = localStorage.getItem("ouiya_user_location");
+      if (savedLoc) setLocationState(savedLoc);
+      const savedCoords = localStorage.getItem("ouiya_user_coords");
+      if (savedCoords) {
+        try {
+          setUserCoords(JSON.parse(savedCoords));
+        } catch (_) {}
+      }
+    }
+  }, []);
+
+  const setLocation = (loc: string, coords?: { lat: number; lng: number }) => {
+    setLocationState(loc);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ouiya_user_location", loc);
+      if (coords) {
+        setUserCoords(coords);
+        localStorage.setItem("ouiya_user_coords", JSON.stringify(coords));
+      }
+    }
+  };
+
+  const openLocationModal = (asPrompt: boolean | unknown = false) => {
+    setIsLocationPrompt(asPrompt === true);
+    setIsLocationModalOpen(true);
+  };
+  const closeLocationModal = () => {
+    setIsLocationModalOpen(false);
+    setIsLocationPrompt(false);
+  };
 
   // Discover Pondicherry actions
   const openDestinationDetails = (dest: TouristDestination) => {
@@ -173,6 +208,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setPendingActionOffer(null);
       addToCartDirect(offerToCart);
     }
+    // Ask for location permission and get location first after logging in
+    openLocationModal(true);
   };
 
   const loginWithGoogle = async () => {
@@ -182,22 +219,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithEmail = async (email: string, pass: string) => {
     await signInWithEmailAndPassword(auth, email, pass);
-    setIsAuthModalOpen(false);
-    if (pendingActionOffer) {
-      const offerToCart = pendingActionOffer;
-      setPendingActionOffer(null);
-      addToCartDirect(offerToCart);
-    }
+    completeAuthSuccess();
   };
 
   const signUpWithEmail = async (email: string, pass: string) => {
     await createUserWithEmailAndPassword(auth, email, pass);
-    setIsAuthModalOpen(false);
-    if (pendingActionOffer) {
-      const offerToCart = pendingActionOffer;
-      setPendingActionOffer(null);
-      addToCartDirect(offerToCart);
-    }
+    completeAuthSuccess();
   };
 
   const logout = async () => {
@@ -215,10 +242,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const toggleDrawer = () => setIsDrawerOpen(prev => !prev);
 
-  // Helper function to apply theme to HTML document root and set theme state
+  // Helper function to apply theme to HTML document root and set theme state safely without redundant DOM manipulation
   const applyTheme = (mode: "light" | "dark" | "system") => {
+    if (typeof window === "undefined") return;
     const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
 
     let active: "light" | "dark" = "dark";
     if (mode === "system") {
@@ -228,8 +255,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       active = mode;
     }
 
-    setTheme(active);
-    root.classList.add(active);
+    setTheme((prev) => (prev === active ? prev : active));
+    if (!root.classList.contains(active)) {
+      root.classList.remove("light", "dark");
+      root.classList.add(active);
+    }
   };
 
   const setThemeMode = (mode: "light" | "dark" | "system") => {
@@ -466,7 +496,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         themeMode,
         theme,
         location,
+        userCoords,
         isLocationModalOpen,
+        isLocationPrompt,
         cartConflictOffer,
         user,
         authLoading,
