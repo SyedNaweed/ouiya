@@ -1444,10 +1444,18 @@ export function mapFirestoreBusiness(docId: string, data: any): Business {
   };
 }
 
+// Global timeout wrapper for Firestore network requests to prevent slow backend from blocking UI
+export const withTimeout = <T>(promise: Promise<T>, timeoutMs = 2000, fallback: T): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), timeoutMs)),
+  ]);
+};
+
 // In-memory caching layer for lightning-fast (0ms) category switching
-let cachedBaseOffers: Offer[] | null = null;
+let cachedBaseOffers: Offer[] = INITIAL_MOCK_OFFERS;
 let lastOffersFetchTimestamp = 0;
-const OFFERS_CACHE_EXPIRY = 30000; // 30s cache
+const OFFERS_CACHE_EXPIRY = 60000; // 60s cache
 
 // Main Data Fetching Interface - Queries Firestore & merges seamlessly with existing UI data
 export const getOffers = async (filters?: {
@@ -1456,52 +1464,53 @@ export const getOffers = async (filters?: {
   location?: string;
 }): Promise<Offer[]> => {
   const now = Date.now();
-  let baseOffers: Offer[];
+  let baseOffers: Offer[] = cachedBaseOffers && cachedBaseOffers.length > 0 ? cachedBaseOffers : INITIAL_MOCK_OFFERS;
 
-  // If in-memory cache is valid, return filtered deals instantly (0ms response)
+  // If in-memory cache is fresh (< 60s), return instant data (0ms response)
   if (cachedBaseOffers && cachedBaseOffers.length > 0 && now - lastOffersFetchTimestamp < OFFERS_CACHE_EXPIRY) {
     baseOffers = cachedBaseOffers;
   } else {
-    let firestoreOffers: Offer[] = [];
-
-    // Query Cloud Firestore `offers` collection according to schema
     try {
-      const querySnapshot = await getDocs(collection(db, "offers"));
-      querySnapshot.forEach((doc: any) => {
-        const data = doc.data();
-        firestoreOffers.push(mapFirestoreOffer(doc.id, data));
+      const querySnapshot = await withTimeout(getDocs(collection(db, "offers")), 2000, null as any);
+      let firestoreOffers: Offer[] = [];
+      if (querySnapshot && querySnapshot.forEach) {
+        querySnapshot.forEach((doc: any) => {
+          const data = doc.data();
+          firestoreOffers.push(mapFirestoreOffer(doc.id, data));
+        });
+      }
+
+      const localAds = getLocalAds();
+
+      // Combine Firestore offers with all curated mock offers (avoiding duplicates by id) and local ads
+      const existingOfferIds = new Set(firestoreOffers.map(o => o.id));
+      const supplementalMockOffers = INITIAL_MOCK_OFFERS.filter(m => !existingOfferIds.has(m.id));
+      baseOffers = [...firestoreOffers, ...supplementalMockOffers, ...localAds];
+
+      // Map and apply fallbacks for missing/empty fields
+      baseOffers = baseOffers.map(o => {
+        const normalizedCat = normalizeCategory(o.category) || o.category || "Food";
+        const defaultLogo = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&auto=format&fit=crop&q=80";
+
+        return {
+          ...o,
+          category: normalizedCat,
+          businessLogo: o.businessLogo || defaultLogo,
+          rating: o.rating || 4.5,
+          reviewsCount: o.reviewsCount || "150 reviews",
+          ouiyaPrice: o.ouiyaPrice || 499,
+          originalPrice: o.originalPrice || 999,
+          discount: o.discount || "50% OFF",
+          shopId: o.shopId || `biz-${(o.businessName || "shop").toLowerCase().replace(/\s+/g, "")}`
+        };
       });
+
+      cachedBaseOffers = baseOffers;
+      lastOffersFetchTimestamp = now;
     } catch {
-      // Silent catch if Firebase rules deny unauthenticated read access
+      // Graceful fallback to existing cache or mock offers
+      baseOffers = cachedBaseOffers || INITIAL_MOCK_OFFERS;
     }
-
-    const localAds = getLocalAds();
-
-    // Combine Firestore offers with all curated mock offers (avoiding duplicates by id) and local ads
-    const existingOfferIds = new Set(firestoreOffers.map(o => o.id));
-    const supplementalMockOffers = INITIAL_MOCK_OFFERS.filter(m => !existingOfferIds.has(m.id));
-    baseOffers = [...firestoreOffers, ...supplementalMockOffers, ...localAds];
-
-    // Map and apply fallbacks for missing/empty fields
-    baseOffers = baseOffers.map(o => {
-      const normalizedCat = normalizeCategory(o.category) || o.category || "Food";
-      const defaultLogo = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&auto=format&fit=crop&q=80";
-
-      return {
-        ...o,
-        category: normalizedCat,
-        businessLogo: o.businessLogo || defaultLogo,
-        rating: o.rating || 4.5,
-        reviewsCount: o.reviewsCount || "150 reviews",
-        ouiyaPrice: o.ouiyaPrice || 499,
-        originalPrice: o.originalPrice || 999,
-        discount: o.discount || "50% OFF",
-        shopId: o.shopId || `biz-${(o.businessName || "shop").toLowerCase().replace(/\s+/g, "")}`
-      };
-    });
-
-    cachedBaseOffers = baseOffers;
-    lastOffersFetchTimestamp = now;
   }
 
   let allOffers = [...baseOffers];
@@ -1542,114 +1551,103 @@ export const getOffers = async (filters?: {
 };
 
 // Query Firestore `users` collection for Businesses (with fallback to public `offers` collection)
+// In-memory caching for businesses
+let cachedBusinesses: Business[] = MOCK_BUSINESSES;
+let lastBusinessesFetchTimestamp = 0;
+const BIZ_CACHE_EXPIRY = 60000;
+
 // Query Firestore `shops`, `businesses`, and `users` collections for Businesses (matching mobile & admin schema)
 export const getBusinessesFromFirebase = async (): Promise<Business[]> => {
+  const now = Date.now();
+  if (cachedBusinesses && cachedBusinesses.length > 0 && now - lastBusinessesFetchTimestamp < BIZ_CACHE_EXPIRY) {
+    return cachedBusinesses;
+  }
+
   const shopsMap: Record<string, Business> = {};
 
-  // 1. Process `shops` collection (primary collection used by mobile app and admin)
   try {
-    const shopsSnap = await getDocs(collection(db, "shops"));
-    shopsSnap.forEach((doc: any) => {
-      const data = doc.data();
-      if (data.approvalStatus && data.approvalStatus !== "approved") return;
-      const id = doc.id;
-      const images = Array.isArray(data.images) ? data.images : (Array.isArray(data.imageUrls) ? data.imageUrls : []);
-      const singleImg = data.imageUrl || data.shopImageUrl || data.logo || data.logoUrl;
-      const heroImg = images.length > 0 ? images[0] : singleImg || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80";
+    // Parallelize all three collections with 2s timeout
+    const [shopsRes, bizRes, usersRes] = await Promise.allSettled([
+      withTimeout(getDocs(collection(db, "shops")), 2000, null as any),
+      withTimeout(getDocs(collection(db, "businesses")), 2000, null as any),
+      withTimeout(getDocs(collection(db, "users")), 2000, null as any),
+    ]);
 
-      shopsMap[id] = {
-        id: id,
-        name: data.name || data.displayName || data.businessName || "Local Partner",
-        logoUrl: heroImg,
-        rating: typeof data.rating === "number" ? data.rating : 4.5,
-        reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : (data.reviewsCount || "100+"),
-        offersCount: data.offersCount || 1,
-        address: data.address || data.location || "Pondicherry",
-        phone: data.phone || "+91 98765 43210",
-        gallery: images.length > 0 ? images : [heroImg],
-        about: data.description || data.about || "Verified local partner business on Ouiya.",
-        hasVoucher: Boolean(data.hasVoucher || (Array.isArray(data.vouchers) && data.vouchers.length > 0)),
-        vouchers: Array.isArray(data.vouchers) ? data.vouchers : [],
-        comments: Array.isArray(data.comments) ? data.comments : []
-      };
-    });
-  } catch {}
+    if (shopsRes.status === "fulfilled" && shopsRes.value && shopsRes.value.forEach) {
+      shopsRes.value.forEach((doc: any) => {
+        const data = doc.data();
+        if (data.approvalStatus && data.approvalStatus !== "approved") return;
+        const id = doc.id;
+        const images = Array.isArray(data.images) ? data.images : (Array.isArray(data.imageUrls) ? data.imageUrls : []);
+        const singleImg = data.imageUrl || data.shopImageUrl || data.logo || data.logoUrl;
+        const heroImg = images.length > 0 ? images[0] : singleImg || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80";
 
-  // 2. Process `businesses` collection
-  try {
-    const bizSnap = await getDocs(collection(db, "businesses"));
-    bizSnap.forEach((doc: any) => {
-      const data = doc.data();
-      const id = doc.id;
-      if (!shopsMap[id]) {
-        shopsMap[id] = mapFirestoreBusiness(id, data);
-      }
-    });
-  } catch {}
-
-  // 3. Process `users` collection for approved business merchants
-  try {
-    const usersSnap = await getDocs(collection(db, "users"));
-    usersSnap.forEach((doc: any) => {
-      const data = doc.data();
-      const isBiz = data.role === "business" || data.businessCategory || data.ownerName;
-      if (!isBiz) return;
-      if (data.approvalStatus && data.approvalStatus !== "approved") return;
-      const id = doc.id;
-      const photoUrl = data.photoUrl || data.logo || data.logoUrl;
-      const name = data.businessName || data.displayName || data.name;
-      if (!name) return;
-
-      if (!shopsMap[id]) {
         shopsMap[id] = {
           id: id,
-          name: name,
-          logoUrl: photoUrl || "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=150&auto=format&fit=crop&q=80",
+          name: data.name || data.displayName || data.businessName || "Local Partner",
+          logoUrl: heroImg,
           rating: typeof data.rating === "number" ? data.rating : 4.5,
-          reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : "100+",
-          offersCount: 1,
-          address: data.businessAddress || data.address || "Pondicherry",
+          reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : (data.reviewsCount || "100+"),
+          offersCount: data.offersCount || 1,
+          address: data.address || data.location || "Pondicherry",
           phone: data.phone || "+91 98765 43210",
-          gallery: photoUrl ? [photoUrl] : [],
-          about: data.businessDescription || data.about || "Quality local business offering top deals.",
-          hasVoucher: Boolean(data.hasVoucher),
-          comments: []
+          gallery: images.length > 0 ? images : [heroImg],
+          about: data.description || data.about || "Verified local partner business on Ouiya.",
+          hasVoucher: Boolean(data.hasVoucher || (Array.isArray(data.vouchers) && data.vouchers.length > 0)),
+          vouchers: Array.isArray(data.vouchers) ? data.vouchers : [],
+          comments: Array.isArray(data.comments) ? data.comments : []
         };
-      }
-    });
-  } catch {}
+      });
+    }
 
-  // 4. Fallback: Extract from offers collection if needed
-  try {
-    if (Object.keys(shopsMap).length === 0) {
-      const offersSnap = await getDocs(collection(db, "offers"));
-      offersSnap.forEach((doc: any) => {
+    if (bizRes.status === "fulfilled" && bizRes.value && bizRes.value.forEach) {
+      bizRes.value.forEach((doc: any) => {
         const data = doc.data();
-        const shopId = data.shopId || `biz-${(data.shopName || data.businessName || doc.id).toLowerCase().replace(/\s+/g, "")}`;
-        if (!shopsMap[shopId]) {
-          shopsMap[shopId] = {
-            id: shopId,
-            name: data.shopName || data.businessName || "Local Partner",
-            logoUrl: (Array.isArray(data.imageUrls) && data.imageUrls[0]) || data.businessLogo || "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=150&auto=format&fit=crop&q=80",
+        const id = doc.id;
+        if (!shopsMap[id]) {
+          shopsMap[id] = mapFirestoreBusiness(id, data);
+        }
+      });
+    }
+
+    if (usersRes.status === "fulfilled" && usersRes.value && usersRes.value.forEach) {
+      usersRes.value.forEach((doc: any) => {
+        const data = doc.data();
+        const isBiz = data.role === "business" || data.businessCategory || data.ownerName;
+        if (!isBiz) return;
+        if (data.approvalStatus && data.approvalStatus !== "approved") return;
+        const id = doc.id;
+        const photoUrl = data.photoUrl || data.logo || data.logoUrl;
+        const name = data.businessName || data.displayName || data.name;
+        if (!name) return;
+
+        if (!shopsMap[id]) {
+          shopsMap[id] = {
+            id: id,
+            name: name,
+            logoUrl: photoUrl || "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=150&auto=format&fit=crop&q=80",
             rating: typeof data.rating === "number" ? data.rating : 4.5,
             reviewsCount: data.reviewCount ? `${data.reviewCount} reviews` : "100+",
             offersCount: 1,
-            address: data.shopAddress || data.location || "Puducherry",
-            phone: "+91 98765 43210",
-            gallery: Array.isArray(data.imageUrls) && data.imageUrls.length > 0 ? data.imageUrls : [
-              "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80"
-            ],
-            about: data.description || "Verified partner business on Ouiya.",
-            hasVoucher: false,
+            address: data.businessAddress || data.address || "Pondicherry",
+            phone: data.phone || "+91 98765 43210",
+            gallery: photoUrl ? [photoUrl] : [],
+            about: data.businessDescription || data.about || "Quality local business offering top deals.",
+            hasVoucher: Boolean(data.hasVoucher),
             comments: []
           };
         }
       });
     }
-  } catch {}
 
-  const result = Object.values(shopsMap);
-  return result.length > 0 ? result : MOCK_BUSINESSES;
+    const liveList = Object.values(shopsMap);
+    const result = liveList.length > 0 ? liveList : MOCK_BUSINESSES;
+    cachedBusinesses = result;
+    lastBusinessesFetchTimestamp = now;
+    return result;
+  } catch {
+    return cachedBusinesses || MOCK_BUSINESSES;
+  }
 };
 
 // Query Firestore `reviews` collection for a shop
@@ -1785,52 +1783,65 @@ export interface Brand {
   businessIds?: string[];
 }
 
+let cachedCategories: Category[] = OFFICIAL_CATEGORIES;
+let lastCategoriesFetchTimestamp = 0;
+const CAT_CACHE_EXPIRY = 60000;
+
 export const getCategoriesFromFirebase = async (): Promise<Category[]> => {
+  const now = Date.now();
+  if (cachedCategories && cachedCategories.length > 0 && now - lastCategoriesFetchTimestamp < CAT_CACHE_EXPIRY) {
+    return cachedCategories;
+  }
+
   // Initialize with all 11 official categories in mobile sequence
   const mergedCategories: Category[] = OFFICIAL_CATEGORIES.map(c => ({ ...c }));
   const customCategories: Category[] = [];
 
   try {
-    const querySnapshot = await getDocs(collection(db, "categories"));
-    querySnapshot.forEach((doc: any) => {
-      const data = doc.data();
-      const catTitle = (data.title || data.name || "").trim();
-      if (!catTitle) return;
-      const catId = doc.id;
+    const querySnapshot = await withTimeout(getDocs(collection(db, "categories")), 2000, null as any);
+    if (querySnapshot && querySnapshot.forEach) {
+      querySnapshot.forEach((doc: any) => {
+        const data = doc.data();
+        const catTitle = (data.title || data.name || "").trim();
+        if (!catTitle) return;
+        const catId = doc.id;
 
-      // Match with official category
-      const officialIdx = mergedCategories.findIndex(
-        (m) => m.id.toLowerCase() === catId.toLowerCase() || m.name.toLowerCase().trim() === catTitle.toLowerCase()
-      );
+        // Match with official category
+        const officialIdx = mergedCategories.findIndex(
+          (m) => m.id.toLowerCase() === catId.toLowerCase() || m.name.toLowerCase().trim() === catTitle.toLowerCase()
+        );
 
-      const subcats = Array.isArray(data.subcategories) && data.subcategories.length > 0
-        ? data.subcategories
-        : (officialIdx >= 0 ? mergedCategories[officialIdx].subcategories : []);
+        const subcats = Array.isArray(data.subcategories) && data.subcategories.length > 0
+          ? data.subcategories
+          : (officialIdx >= 0 ? mergedCategories[officialIdx].subcategories : []);
 
-      const catObj: Category = {
-        id: doc.id,
-        name: officialIdx >= 0 ? mergedCategories[officialIdx].name : catTitle,
-        iconName: data.icon || (officialIdx >= 0 ? mergedCategories[officialIdx].iconName : "/assets/category_icons/cat_accommodation.png"),
-        offersCount: data.offersCount || 0,
-        subcategories: subcats
-      };
-
-      if (officialIdx >= 0) {
-        mergedCategories[officialIdx] = {
-          ...mergedCategories[officialIdx],
-          ...catObj,
-          subcategories: subcats && subcats.length > 0 ? subcats : mergedCategories[officialIdx].subcategories
+        const catObj: Category = {
+          id: doc.id,
+          name: officialIdx >= 0 ? mergedCategories[officialIdx].name : catTitle,
+          iconName: data.icon || (officialIdx >= 0 ? mergedCategories[officialIdx].iconName : "/assets/category_icons/cat_accommodation.png"),
+          offersCount: data.offersCount || 0,
+          subcategories: subcats
         };
-      } else {
-        customCategories.push(catObj);
-      }
-    });
-  } catch {
-    // Graceful fallback to official categories when offline or unauthenticated
-  }
 
-  // All 11 official categories are guaranteed to be present first, followed by any admin-created custom categories
-  return [...mergedCategories, ...customCategories];
+        if (officialIdx >= 0) {
+          mergedCategories[officialIdx] = {
+            ...mergedCategories[officialIdx],
+            ...catObj,
+            subcategories: subcats && subcats.length > 0 ? subcats : mergedCategories[officialIdx].subcategories
+          };
+        } else {
+          customCategories.push(catObj);
+        }
+      });
+    }
+
+    const result = [...mergedCategories, ...customCategories];
+    cachedCategories = result;
+    lastCategoriesFetchTimestamp = now;
+    return result;
+  } catch {
+    return cachedCategories || OFFICIAL_CATEGORIES;
+  }
 };
 
 export const getBannersFromFirebase = async (): Promise<AppBanner[]> => {
@@ -1969,70 +1980,77 @@ export const getCategoryBannersFromFirebase = async (
   const catKey = (categoryId || categoryName || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
 
   try {
-    const bannersSnap = await getDocs(collection(db, "banners"));
-    bannersSnap.forEach((doc: any) => {
-      const data = doc.data();
-      if (data.isActive !== false) {
-        const bCatId = (data.categoryId || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
-        const bCatName = (data.categoryName || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
-        const isCatTarget = data.targetScreen === "category" || Boolean(bCatId) || Boolean(bCatName);
+    const [bannersRes, campRes] = await Promise.allSettled([
+      withTimeout(getDocs(collection(db, "banners")), 2000, null as any),
+      withTimeout(getDocs(collection(db, "campaigns")), 2000, null as any),
+    ]);
 
-        if (isCatTarget) {
-          const isMatch =
-            !catKey ||
-            catKey === "all" ||
-            bCatId === catKey ||
-            bCatName === catKey ||
-            (bCatId && catKey.includes(bCatId)) ||
-            (catKey && bCatId.includes(catKey)) ||
-            (bCatName && catKey.includes(bCatName)) ||
-            (catKey && bCatName.includes(catKey));
+    if (bannersRes.status === "fulfilled" && bannersRes.value && bannersRes.value.forEach) {
+      bannersRes.value.forEach((doc: any) => {
+        const data = doc.data();
+        if (data.isActive !== false) {
+          const bCatId = (data.categoryId || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+          const bCatName = (data.categoryName || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+          const isCatTarget = data.targetScreen === "category" || Boolean(bCatId) || Boolean(bCatName);
 
-          if (isMatch) {
+          if (isCatTarget) {
+            const isMatch =
+              !catKey ||
+              catKey === "all" ||
+              bCatId === catKey ||
+              bCatName === catKey ||
+              (bCatId && catKey.includes(bCatId)) ||
+              (catKey && bCatId.includes(catKey)) ||
+              (bCatName && catKey.includes(bCatName)) ||
+              (catKey && bCatName.includes(catKey));
+
+            if (isMatch) {
+              banners.push({
+                id: doc.id,
+                imageUrl: data.imageUrl || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+                title: data.title || "Category Deal",
+                subtitle: data.subtitle || "",
+                targetOfferId: data.targetOfferId || "",
+                targetShopId: data.targetShopId || "",
+                externalUrl: data.externalUrl,
+                isActive: true,
+                targetScreen: "category",
+                categoryId: data.categoryId,
+                categoryName: data.categoryName
+              });
+            }
+          }
+        }
+      });
+    }
+
+    if (campRes.status === "fulfilled" && campRes.value && campRes.value.forEach) {
+      campRes.value.forEach((doc: any) => {
+        const data = doc.data();
+        const isPaid = (data.paymentStatus || "").toLowerCase() === "paid";
+        const status = (data.status || "").toLowerCase();
+        const isActive = status === "active" || status === "approved";
+        const adType = (data.adType || "").toLowerCase();
+        const targetScreen = (data.targetScreen || "").toLowerCase();
+
+        if ((isPaid || isActive) && (adType.includes("category") || targetScreen === "category")) {
+          const cCatId = (data.categoryId || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+          if (!catKey || catKey === "all" || cCatId === catKey || cCatId.includes(catKey) || catKey.includes(cCatId)) {
             banners.push({
-              id: doc.id,
-              imageUrl: data.imageUrl || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-              title: data.title || "Category Deal",
-              subtitle: data.subtitle || "",
+              id: `camp_${doc.id}`,
+              imageUrl: data.adImageUrl || data.imageUrl || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+              title: data.businessName || data.title || "Featured Category Ad",
+              subtitle: data.notes || data.subtitle || "Special Promotion",
               targetOfferId: data.targetOfferId || "",
               targetShopId: data.targetShopId || "",
-              externalUrl: data.externalUrl,
               isActive: true,
               targetScreen: "category",
-              categoryId: data.categoryId,
-              categoryName: data.categoryName
+              categoryId: data.categoryId
             });
           }
         }
-      }
-    });
-
-    const campaignsSnap = await getDocs(collection(db, "campaigns"));
-    campaignsSnap.forEach((doc: any) => {
-      const data = doc.data();
-      const isPaid = (data.paymentStatus || "").toLowerCase() === "paid";
-      const status = (data.status || "").toLowerCase();
-      const isActive = status === "active" || status === "approved";
-      const adType = (data.adType || "").toLowerCase();
-      const targetScreen = (data.targetScreen || "").toLowerCase();
-
-      if ((isPaid || isActive) && (adType.includes("category") || targetScreen === "category")) {
-        const cCatId = (data.categoryId || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
-        if (!catKey || catKey === "all" || cCatId === catKey || cCatId.includes(catKey) || catKey.includes(cCatId)) {
-          banners.push({
-            id: `camp_${doc.id}`,
-            imageUrl: data.adImageUrl || data.imageUrl || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-            title: data.businessName || data.title || "Featured Category Ad",
-            subtitle: data.notes || data.subtitle || "Special Promotion",
-            targetOfferId: data.targetOfferId || "",
-            targetShopId: data.targetShopId || "",
-            isActive: true,
-            targetScreen: "category",
-            categoryId: data.categoryId
-          });
-        }
-      }
-    });
+      });
+    }
   } catch {
     // Return live fetched banners from Firebase
   }

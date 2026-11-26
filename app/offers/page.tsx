@@ -7,6 +7,7 @@ import {
   getBusinessesFromFirebase, 
   getCategoriesFromFirebase, 
   OFFICIAL_CATEGORIES, 
+  INITIAL_MOCK_OFFERS,
   Offer, 
   Business, 
   Category, 
@@ -154,7 +155,7 @@ export default function CategoryBrowseView() {
     openOfferDetails
   } = useApp();
 
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [offers, setOffers] = useState<Offer[]>(INITIAL_MOCK_OFFERS);
   const [categoriesList, setCategoriesList] = useState<Category[]>(OFFICIAL_CATEGORIES);
   const [activeSubCategory, setActiveSubCategory] = useState<string>("All");
 

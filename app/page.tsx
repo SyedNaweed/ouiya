@@ -10,6 +10,8 @@ import {
   getPromoBannersFromFirebase,
   getHotspotsFromFirebase,
   OFFICIAL_CATEGORIES,
+  INITIAL_MOCK_OFFERS,
+  MOCK_BUSINESSES,
   Offer, 
   Category, 
   Business,
@@ -167,8 +169,8 @@ export default function AppHome() {
   } = useApp();
 
   const [categories, setCategories] = useState<Category[]>(OFFICIAL_CATEGORIES);
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [offers, setOffers] = useState<Offer[]>(INITIAL_MOCK_OFFERS);
+  const [businesses, setBusinesses] = useState<Business[]>(MOCK_BUSINESSES);
   const [banners, setBanners] = useState<AppBanner[]>([]);
   const [promoBanners, setPromoBanners] = useState<PromoBanner[]>([]);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
@@ -537,7 +539,7 @@ export default function AppHome() {
                   onClick={() => setActiveSubCategory("All")}
                   className="bg-[#DC0101] text-white text-xs font-bold px-4 py-2 rounded-xl"
                 >
-                  View All {selectedCategory} Offers
+                  View All {isAll ? "" : `${selectedCategory} `}Offers
                 </button>
               </div>
             )}

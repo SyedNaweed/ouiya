@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AppBanner, getCategoryBannersFromFirebase, getOffers, Offer } from "../lib/db";
+import { AppBanner, getCategoryBannersFromFirebase, getOffers, Offer, DEFAULT_CATEGORY_BANNERS, normalizeCategory } from "../lib/db";
 import { useApp } from "../lib/AppContext";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
@@ -11,24 +11,41 @@ interface CategoryBannerCarouselProps {
   onSelectBannerOffer?: (offerId: string) => void;
 }
 
+const getInitialCategoryBanner = (cId?: string, cName?: string): AppBanner[] => {
+  const norm = normalizeCategory(cId || cName || "").toLowerCase().replace(/[\s_]+/g, "_");
+  const meta = DEFAULT_CATEGORY_BANNERS[norm] || DEFAULT_CATEGORY_BANNERS["all"] || DEFAULT_CATEGORY_BANNERS["accommodation"];
+  return [{
+    id: `default_banner_${norm || "all"}`,
+    imageUrl: meta.imageUrl,
+    title: meta.title,
+    subtitle: meta.subtitle,
+    targetOfferId: "",
+    targetShopId: "",
+    isActive: true,
+    targetScreen: "category",
+    categoryId: norm || "all",
+    categoryName: norm || "all"
+  }];
+};
+
 export default function CategoryBannerCarousel({
   categoryId,
   categoryName,
   onSelectBannerOffer,
 }: CategoryBannerCarouselProps) {
   const { openOfferDetails, openShopDetails, setSelectedCategory, setTab, selectedCategory } = useApp();
-  const [banners, setBanners] = useState<AppBanner[]>([]);
+  const [banners, setBanners] = useState<AppBanner[]>(() => getInitialCategoryBanner(categoryId, categoryName));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
+    // Set instant fallback banner first (0ms latency, zero flash)
+    setBanners(getInitialCategoryBanner(categoryId, categoryName));
+    setCurrentIndex(0);
+
     getCategoryBannersFromFirebase(categoryId, categoryName).then((data) => {
-      if (isMounted) {
+      if (isMounted && data && data.length > 0) {
         setBanners(data);
-        setCurrentIndex(0);
-        setLoading(false);
       }
     });
     return () => {
@@ -44,12 +61,6 @@ export default function CategoryBannerCarousel({
     }, 5000);
     return () => clearInterval(interval);
   }, [banners.length]);
-
-  if (loading) {
-    return (
-      <div className="w-full h-44 sm:h-52 rounded-3xl bg-surface-hover animate-pulse border border-border-main" />
-    );
-  }
 
   if (banners.length === 0) {
     return null;
